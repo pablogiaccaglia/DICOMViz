@@ -1,0 +1,463 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>925</width>
+    <height>715</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget"/>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>925</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFiles">
+    <property name="toolTip">
+     <string/>
+    </property>
+    <property name="title">
+     <string>Files</string>
+    </property>
+    <widget class="QMenu" name="menuADD_DICOM_images">
+     <property name="title">
+      <string>ADD DICOM images</string>
+     </property>
+     <addaction name="actionAddDICOMFile"/>
+     <addaction name="actionAddDICOMFolder"/>
+    </widget>
+    <addaction name="actionNewWindow"/>
+    <addaction name="actionDuplicateWindow"/>
+    <addaction name="separator"/>
+    <addaction name="actionOpenDICOMFile"/>
+    <addaction name="actionOpenDICOMFolder"/>
+    <addaction name="separator"/>
+    <addaction name="menuADD_DICOM_images"/>
+   </widget>
+   <widget class="QMenu" name="menuExport">
+    <property name="title">
+     <string>Export</string>
+    </property>
+    <addaction name="actionExportImages"/>
+    <addaction name="separator"/>
+    <addaction name="actionCopy_to_clipboard"/>
+    <addaction name="actionCopy_all_to_clipboard"/>
+   </widget>
+   <widget class="QMenu" name="menuZoom">
+    <property name="title">
+     <string>Zoom</string>
+    </property>
+    <addaction name="actionFillViewport"/>
+    <addaction name="actionZoom100"/>
+    <addaction name="actionZoom200"/>
+    <addaction name="actionZoom400"/>
+    <addaction name="actionZoom800"/>
+    <addaction name="separator"/>
+    <addaction name="actionZoomIn"/>
+    <addaction name="actionZoomOut"/>
+   </widget>
+   <widget class="QMenu" name="menuAnnotations">
+    <property name="title">
+     <string>Annotations</string>
+    </property>
+   </widget>
+   <widget class="QMenu" name="menuAlterations">
+    <property name="title">
+     <string>Alterations</string>
+    </property>
+   </widget>
+   <widget class="QMenu" name="menuAdjustements">
+    <property name="title">
+     <string>Adjustements</string>
+    </property>
+    <addaction name="actionDefaultWindow"/>
+    <addaction name="actionFullDynamic"/>
+    <addaction name="separator"/>
+    <addaction name="actionCTAbdomen"/>
+    <addaction name="actionCTAngio"/>
+    <addaction name="actionCTBone"/>
+    <addaction name="actionCTBrain"/>
+    <addaction name="actionCTChest"/>
+    <addaction name="actionCTLungs"/>
+    <addaction name="separator"/>
+    <addaction name="actionNegative"/>
+    <addaction name="separator"/>
+    <addaction name="actionCustomWindow"/>
+   </widget>
+   <widget class="QMenu" name="menuTransformations">
+    <property name="title">
+     <string>Transformations</string>
+    </property>
+    <addaction name="actionRotate90degreesCCW"/>
+    <addaction name="actionRotate90DegreesCW"/>
+    <addaction name="actionRotate180Degrees"/>
+    <addaction name="separator"/>
+    <addaction name="actionFlipHorizontal"/>
+    <addaction name="actionFlip_vertical"/>
+    <addaction name="separator"/>
+    <addaction name="actionClearTransformations"/>
+   </widget>
+   <widget class="QMenu" name="menuCine">
+    <property name="title">
+     <string>Cine</string>
+    </property>
+   </widget>
+   <addaction name="menuFiles"/>
+   <addaction name="menuExport"/>
+   <addaction name="menuZoom"/>
+   <addaction name="menuAnnotations"/>
+   <addaction name="menuAlterations"/>
+   <addaction name="menuAdjustements"/>
+   <addaction name="menuTransformations"/>
+   <addaction name="menuCine"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionNewWindow">
+   <property name="text">
+    <string>New window              Ctrl+N</string>
+   </property>
+   <property name="statusTip">
+    <string>Open new window</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+V</string>
+   </property>
+   <property name="shortcutVisibleInContextMenu">
+    <bool>true</bool>
+   </property>
+  </action>
+  <action name="actionDuplicateWindow">
+   <property name="text">
+    <string>Duplicate window      Ctrl+Shit+N</string>
+   </property>
+   <property name="statusTip">
+    <string>Duplicate the current window</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+N</string>
+   </property>
+  </action>
+  <action name="actionOpenDICOMFile">
+   <property name="text">
+    <string>Open DICOM file        Ctrl+O</string>
+   </property>
+   <property name="statusTip">
+    <string>Open a DICOM file</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
+  </action>
+  <action name="actionOpenDICOMFolder">
+   <property name="text">
+    <string>Open DICOM folder   Ctrl+Shift+O</string>
+   </property>
+   <property name="statusTip">
+    <string>Open DICOM folder</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+O</string>
+   </property>
+  </action>
+  <action name="actionAddDICOMFile">
+   <property name="text">
+    <string>Add DICOM file</string>
+   </property>
+   <property name="statusTip">
+    <string>Add a new DICOM file</string>
+   </property>
+  </action>
+  <action name="actionAddDICOMFolder">
+   <property name="text">
+    <string>Add DICOM folder</string>
+   </property>
+   <property name="statusTip">
+    <string>ADD a new DICOM folder</string>
+   </property>
+  </action>
+  <action name="actionExportImages">
+   <property name="text">
+    <string>Export images    Ctrl+E</string>
+   </property>
+   <property name="statusTip">
+    <string>Export images in different formats</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+E</string>
+   </property>
+  </action>
+  <action name="actionCopy_to_clipboard">
+   <property name="text">
+    <string>Copy to clipboard        Ctrl+C</string>
+   </property>
+   <property name="statusTip">
+    <string>Copy image to clipboard</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+C</string>
+   </property>
+  </action>
+  <action name="actionCopy_all_to_clipboard">
+   <property name="text">
+    <string>Copy all to clipboard   Shift+C</string>
+   </property>
+   <property name="statusTip">
+    <string>Copy all images to clipboard</string>
+   </property>
+   <property name="shortcut">
+    <string>Shift+C</string>
+   </property>
+  </action>
+  <action name="actionFillViewport">
+   <property name="text">
+    <string>Fill viewport   Ctrl+0</string>
+   </property>
+   <property name="statusTip">
+    <string>Fill the whole visible viewport</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+0</string>
+   </property>
+  </action>
+  <action name="actionZoom100">
+   <property name="text">
+    <string>100%  Ctrl+1</string>
+   </property>
+   <property name="statusTip">
+    <string>100% zoom in</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+1</string>
+   </property>
+  </action>
+  <action name="actionZoom200">
+   <property name="text">
+    <string>200%  Ctrl+2</string>
+   </property>
+   <property name="statusTip">
+    <string>200% zoom in</string>
+   </property>
+  </action>
+  <action name="actionZoom400">
+   <property name="text">
+    <string>400%   Ctrl+3</string>
+   </property>
+   <property name="statusTip">
+    <string>400% zoom in</string>
+   </property>
+  </action>
+  <action name="actionZoom800">
+   <property name="text">
+    <string>800%   Ctrl+4</string>
+   </property>
+   <property name="statusTip">
+    <string>800% zoom in</string>
+   </property>
+  </action>
+  <action name="actionZoomIn">
+   <property name="text">
+    <string>Zoom in Ctrl++</string>
+   </property>
+   <property name="statusTip">
+    <string>zooms in</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl++</string>
+   </property>
+  </action>
+  <action name="actionZoomOut">
+   <property name="text">
+    <string>Zoom out   Ctrl+-</string>
+   </property>
+   <property name="statusTip">
+    <string>zooms out</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+-</string>
+   </property>
+  </action>
+  <action name="actionDefaultWindow">
+   <property name="text">
+    <string>Default window         0</string>
+   </property>
+   <property name="statusTip">
+    <string>defualt window</string>
+   </property>
+   <property name="shortcut">
+    <string>0</string>
+   </property>
+  </action>
+  <action name="actionFullDynamic">
+   <property name="text">
+    <string>Full dynamic              1</string>
+   </property>
+   <property name="statusTip">
+    <string>full dynamic</string>
+   </property>
+   <property name="shortcut">
+    <string>1</string>
+   </property>
+  </action>
+  <action name="actionCTAbdomen">
+   <property name="text">
+    <string>CT Abdomen             2</string>
+   </property>
+   <property name="statusTip">
+    <string>CT Abdomen</string>
+   </property>
+   <property name="shortcut">
+    <string>2</string>
+   </property>
+  </action>
+  <action name="actionCTAngio">
+   <property name="text">
+    <string>CT Angio                    3</string>
+   </property>
+   <property name="statusTip">
+    <string>CT Angio</string>
+   </property>
+   <property name="shortcut">
+    <string>3</string>
+   </property>
+  </action>
+  <action name="actionCTBone">
+   <property name="text">
+    <string>CT Bone                     4</string>
+   </property>
+   <property name="statusTip">
+    <string>CT Bone</string>
+   </property>
+   <property name="shortcut">
+    <string>4</string>
+   </property>
+  </action>
+  <action name="actionCTBrain">
+   <property name="text">
+    <string>CT Brain                     5</string>
+   </property>
+   <property name="statusTip">
+    <string>CT Brain</string>
+   </property>
+   <property name="shortcut">
+    <string>5</string>
+   </property>
+  </action>
+  <action name="actionCTChest">
+   <property name="text">
+    <string>CT Chest                    6</string>
+   </property>
+   <property name="statusTip">
+    <string>CT Chest</string>
+   </property>
+   <property name="shortcut">
+    <string>6</string>
+   </property>
+  </action>
+  <action name="actionCTLungs">
+   <property name="text">
+    <string>CT Lungs                    7</string>
+   </property>
+   <property name="statusTip">
+    <string>CT Lungs</string>
+   </property>
+   <property name="shortcut">
+    <string>7</string>
+   </property>
+  </action>
+  <action name="actionNegative">
+   <property name="text">
+    <string>Negative                    F11</string>
+   </property>
+   <property name="statusTip">
+    <string>Negative filter</string>
+   </property>
+  </action>
+  <action name="actionCustomWindow">
+   <property name="text">
+    <string>Custom window        Ctrl+F11</string>
+   </property>
+   <property name="statusTip">
+    <string>Custom window settings</string>
+   </property>
+  </action>
+  <action name="actionRotate90degreesCCW">
+   <property name="text">
+    <string>Rotate 90° CCW       Ctrl+[</string>
+   </property>
+   <property name="statusTip">
+    <string>Rotate 90 degrees counter clock wise</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Alt+T</string>
+   </property>
+  </action>
+  <action name="actionRotate90DegreesCW">
+   <property name="text">
+    <string>Rotate 90° CW</string>
+   </property>
+   <property name="statusTip">
+    <string>Rotate 90 degrees clockwise</string>
+   </property>
+   <property name="shortcut">
+    <string>Meta+Ctrl+T</string>
+   </property>
+  </action>
+  <action name="actionRotate180Degrees">
+   <property name="text">
+    <string>Rotate 180°</string>
+   </property>
+   <property name="statusTip">
+    <string>Rotate 180 degrees clockwise</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+F</string>
+   </property>
+  </action>
+  <action name="actionFlipHorizontal">
+   <property name="text">
+    <string>Flip horizontal</string>
+   </property>
+   <property name="statusTip">
+    <string>Flip Horizontal</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+J</string>
+   </property>
+  </action>
+  <action name="actionFlip_vertical">
+   <property name="text">
+    <string>Flip vertical</string>
+   </property>
+   <property name="statusTip">
+    <string>Flip vertical</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+W</string>
+   </property>
+  </action>
+  <action name="actionClearTransformations">
+   <property name="text">
+    <string>Clear transformations</string>
+   </property>
+   <property name="statusTip">
+    <string>Clear transformations</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Ù</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
