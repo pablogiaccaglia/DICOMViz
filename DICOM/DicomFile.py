@@ -1,14 +1,15 @@
 from pydicom import dicomio
 from DICOM.DicomAbstractContainer import DicomAbstractContainerClass
+import os
 
 
 class DicomFile(DicomAbstractContainerClass):
 
-    def __init__(self, rootDir):
-        self.rootDir = rootDir  # directory Dicoms were loaded from, files for this series may be in subdirectories
-        self.filename = ""  # list of filenames for the Dicom associated with this series
+    def __init__(self, fileName):
+        self.rootDir = os.path.dirname(fileName)  # directory Dicoms were loaded from, files for this series may be in subdirectories
+        self.filename = fileName  # list of filenames for the Dicom associated with this series
         self.loadTag = ("", "")  # loaded abbreviated tag->(name,value)
-        self.imgCache = []
+        self.imgCache = None
 
     def addFile(self, filename, loadTag):
         """Add a filename and abbreviated tag map, previously stored file will be lost."""
@@ -52,14 +53,15 @@ class DicomFile(DicomAbstractContainerClass):
     def getPixelData(self, index = None):
         """Get the pixel data array for file at position `index` in self.filenames, or None if no pixel data."""
         if not self.imgCache:
-            try:
-                dcm = dicomio.read_file(self.filename)
-                rslope = float(dcm.get("RescaleSlope", 1) or 1)
-                rinter = float(dcm.get("RescaleIntercept", 0) or 0)
-                img = dcm.pixel_array * rslope + rinter
-            except:
-                img = None  # exceptions indicate that the pixel data doesn't exist or isn't readable so ignore
+                try:
+                    dcm = dicomio.read_file(self.filename)
+                    rslope = float(dcm.get("RescaleSlope", 1) or 1)
+                    rinter = float(dcm.get("RescaleIntercept", 0) or 0)
+                    img = dcm.pixel_array * rslope + rinter
 
-            self.imgCache = img
+                except:
+                    img = None  # exceptions indicate that the pixel data doesn't exist or isn't readable so ignore
+
+                self.imgCache = img
 
         return self.imgCache

@@ -1,4 +1,5 @@
 import numpy as np
+import pydicom
 from pydicom import dicomio
 from DICOM import DicomAbstractContainer
 
@@ -12,9 +13,11 @@ class DicomSeries(DicomAbstractContainer.DicomAbstractContainerClass):
     """
 
     def __init__(self, seriesID, rootDir):
+
         self.seriesID = seriesID  # ID of the series or ???
         self.rootDir = rootDir  # directory Dicoms were loaded from, files for this series may be in subdirectories
         self.filenames = []  # list of filenames for the Dicom associated with this series
+        self.sortedFileNames = []  # filenames but sorted
         self.loadTags = []  # loaded abbreviated tag->(name,value) maps, 1 for each of self.filenames
         self.imgCache = {}  # image data cache, mapping index in self.filenames to arrays or None for non-images files
         self.tagCache = {}  # tag values cache, mapping index in self.filenames to OrderedDict of tag->(name,value) maps
@@ -91,3 +94,24 @@ class DicomSeries(DicomAbstractContainer.DicomAbstractContainerClass):
 
             avgSpan = np.average([b - a for a, b in zip(times, times[1:])])
             return times[0], avgSpan, len(times)
+
+    def sortSeries(self):
+
+        # skip files with no SliceLocation (eg scout views)
+        skipCount = 0
+        for f in self.filenames:
+            fData = pydicom.dcmread(f)
+            if hasattr(fData, 'SliceLocation'):
+                self.sortedFileNames.append((fData, f))
+            else:
+                skipCount = skipCount + 1
+
+        print("skipped, no SliceLocation: {}".format(skipCount))
+
+        # ensure they are in the correct order
+        self.sortedFileNames = sorted(self.sortedFileNames, key = lambda s: s[0].SliceLocation, reverse = True)
+
+        for i in range(0, len(self.sortedFileNames)):
+            self.sortedFileNames[i] = (self.sortedFileNames[i][1])
+
+      #  print(self.sortedFileNames)

@@ -1,1 +1,1 @@
-from GUI import menus
+from GUI import menus, graphics

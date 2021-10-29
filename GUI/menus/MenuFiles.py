@@ -1,5 +1,8 @@
+import time
+
 from PyQt6 import QtWidgets, QtCore
 from PyQt6.QtWidgets import QDialog, QFileDialog, QMenu
+
 
 class MenuFiles(QMenu, QDialog):
 
@@ -56,16 +59,23 @@ class MenuFiles(QMenu, QDialog):
         self.addAction(self.menuADD_DICOM_images.menuAction())
 
     def __openDICOMFolder(self):
-        folderPath = QFileDialog.getExistingDirectory(self, "Select Directory", self.menuBar.window.dicomHandler.lastLoadFolderDir)
+        folderPath = QFileDialog.getExistingDirectory(self, "Select Directory",
+                                                      self.menuBar.window.dicomHandler.lastLoadFolderDir)
         if folderPath:
             self.menuBar.window.dicomHandler.addSource(folderPath)
+            time.sleep(4)
+          #  print(self.menuBar.window.dicomHandler.seriesFilesPathsList)
+            self.menuBar.window.seriesFilesDock.loadFiles(self.menuBar.window.dicomHandler.seriesFilesPathsList)
+
 
     def __openDICOMFile(self):
         filePath = QFileDialog.getOpenFileName(self, 'Open file', "", "DICOM (*.dcm)")
-        print(filePath)
-        if filePath:
+
+        if filePath[0] != '':
             self.menuBar.window.dicomHandler.addFile(filePath[0])
-            print(self.menuBar.window.dicomHandler.lastLoadFileDir)
+            self.menuBar.window.data = self.menuBar.window.dicomHandler.srcFiles[0].getPixelData()
+            #  print(self.menuBar.window.data)
+            self.menuBar.window.graphicsView.setImageToView(self.menuBar.window.data)
 
     def __retranslateUI(self):
         _translate = QtCore.QCoreApplication.translate

@@ -112,6 +112,9 @@ def loadDicomDir(rootdir, statusfunc = lambda s, c, n: None, numprocs = None):
             if numfiles < 100 or count % (numfiles // 100) == 0:
                 statusfunc("Loading DICOM files", count, numfiles)
 
+    for seri in series:
+        series[seri].sortSeries()
+
     statusfunc("", 0, 0)
     # all the built dicomSeries object are returned as a list
     return list(series.values())
