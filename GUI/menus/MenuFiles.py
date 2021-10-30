@@ -62,11 +62,7 @@ class MenuFiles(QMenu, QDialog):
         folderPath = QFileDialog.getExistingDirectory(self, "Select Directory",
                                                       self.menuBar.window.dicomHandler.lastLoadFolderDir)
         if folderPath:
-            self.menuBar.window.dicomHandler.addSource(folderPath)
-            time.sleep(4)
-          #  print(self.menuBar.window.dicomHandler.seriesFilesPathsList)
-            self.menuBar.window.seriesFilesDock.loadFiles(self.menuBar.window.dicomHandler.seriesFilesPathsList)
-
+            self.menuBar.window.handleFilesFromFolder(folderPath)
 
     def __openDICOMFile(self):
         filePath = QFileDialog.getOpenFileName(self, 'Open file', "", "DICOM (*.dcm)")

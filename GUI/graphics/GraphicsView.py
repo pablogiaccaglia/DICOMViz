@@ -28,11 +28,10 @@ class GraphicsView(QGraphicsView):
         self.proxySceneWidget = self.scene.addWidget(self.image)
         self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-
-        self.resizeScene()
         self.setScene(self.scene)
+        self.resizeEvent()
 
-    def resizeEvent(self, event):
+    def resizeEvent(self, event = None):
         try:
             self.proxySceneWidget.setMinimumSize(
                 self.fatherWidget.size().width() - self.fatherWidget.size().width() / 30,

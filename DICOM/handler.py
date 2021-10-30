@@ -22,6 +22,7 @@ class Handler:
         self.setStatus("")
         self.lastLoadFolderDir = None
         self.lastLoadFileDir = None
+        self.loadIsComplete = False
 
     # self.statusSignal.connect(self.setStatus)
 
@@ -64,12 +65,11 @@ class Handler:
                 loader = loadDicomDir if os.path.isdir(src) else loadDicomZip
                 #  series = loader(src, self.statusSignal.emit)
                 series = loader(src)
-
                 self.srcList.append((src, series))
-                    #print(series[0].filenames)
                 self.seriesFilesPathsList = series[0].sortedFileNames
+                print("ciao")
+                self.loadIsComplete = True
 
-            #  self.updateSignal.emit()
             except Empty:
                 pass
 

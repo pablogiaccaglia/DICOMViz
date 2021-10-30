@@ -1,6 +1,7 @@
+import time
+
 from PyQt6 import QtWidgets, QtCore
 from PyQt6.QtWidgets import QMainWindow, QGraphicsScene
-
 import DICOM
 from GUI.docks.Dock import Dock
 from GUI.menus.MenuBar import MenuBar
@@ -55,16 +56,22 @@ class GUIMainWindow(QMainWindow):
         self.show()
 
     def setupDocks(self):
-        self.addDockWidget(QtCore.Qt.DockWidgetArea(1), self.seriesFilesDock.dockWidget)
+        self.addDockWidget(QtCore.Qt.DockWidgetArea(1), self.seriesFilesDock)
 
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Preferred,
                                            QtWidgets.QSizePolicy.Policy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.singleFilesDock.dockWidget.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(self.singleFilesDock.sizePolicy().hasHeightForWidth())
 
-        self.singleFilesDock.dockWidget.setSizePolicy(sizePolicy)
-        self.addDockWidget(QtCore.Qt.DockWidgetArea(1), self.singleFilesDock.dockWidget)
+        self.singleFilesDock.setSizePolicy(sizePolicy)
+        self.addDockWidget(QtCore.Qt.DockWidgetArea(1), self.singleFilesDock)
+
+    def handleFilesFromFolder(self, folderPath):
+        self.dicomHandler.addSource(folderPath)
+        time.sleep(4)
+        self.seriesFilesDock.loadFiles(self.menuBar.window.dicomHandler.seriesFilesPathsList)
+        self.dicomHandler.loadIsComplete = False
 
     def start(self):
         self.show()
