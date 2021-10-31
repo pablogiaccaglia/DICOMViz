@@ -6,6 +6,7 @@ import DICOM
 from GUI.docks.Dock import Dock
 from GUI.menus.MenuBar import MenuBar
 from GUI.graphics.GraphicsView import GraphicsView
+from GUI.containers.TagsGroupBox import TagsGroupBox
 
 
 class GUIMainWindow(QMainWindow):
@@ -20,6 +21,7 @@ class GUIMainWindow(QMainWindow):
         self.centralWidget = QtWidgets.QWidget(self)
         self.horizontalLayout = QtWidgets.QHBoxLayout(self.centralWidget)
         self.graphicsView = GraphicsView(self.centralWidget)
+        self.tagsGroupBox = TagsGroupBox(self.centralWidget)
         self.scene = QGraphicsScene()
         self.menuBar = MenuBar(self)
         self.statusBar = QtWidgets.QStatusBar(self)
@@ -47,6 +49,7 @@ class GUIMainWindow(QMainWindow):
         self.horizontalLayout.setObjectName("horizontalLayout")
 
         self.horizontalLayout.addWidget(self.graphicsView)
+        self.horizontalLayout.addWidget(self.tagsGroupBox)
 
         self.setMenuBar(self.menuBar)
         self.setupDocks()
