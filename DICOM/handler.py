@@ -1,20 +1,26 @@
 import os
 import threading
+import zipfile
 from typing import List
 
+from DICOM.DicomAbstractContainer import ViewMode
 from DICOM.dicom import loadDicomDir, loadDicomZip, loadDicomFile
-from queue import Queue, Empty
+from multiprocessing import Queue
+from queue import Empty
 
 
 class Handler:
     # statusSignal = QtCore.pyqtSignal(str, int, int)  # signal for updating the status bar asynchronously
 
-    def __init__(self):
+    def __init__(self, window):
         # create the directory queue and loading thread objects
         #   super().__init__()
+        self._currentSelectedSeriesIndex = 0
+        self.currentViewMode = ViewMode.ORIGINAL
+        self.window = window
         self.srcList = []  # list of tuples -> (src directory, DicomSeries object)
-        self.seriesFilesPathsList = []  # list of series' file paths
-        self.srcFiles = []
+        self.currentSeries = []  # list of series of the currently selected
+        self.srcDicomFileObjectsDict = {}  # dict of DicomFile objects -> filePath : DicomFile object
         self.srcQueue = Queue()  # queue of directories to load
         self.loadDirThread = threading.Thread(target = self._loadSourceThread)
         self.loadDirThread.daemon = True  # clean shutdown possible with daemon threads
@@ -23,6 +29,7 @@ class Handler:
         self.lastLoadFolderDir = None
         self.lastLoadFileDir = None
         self.loadIsComplete = False
+        self.currentShownDicomFileObject = None
 
     # self.statusSignal.connect(self.setStatus)
 
@@ -49,10 +56,6 @@ class Handler:
         self.srcQueue.put(rootDir)
         self.lastLoadFolderDir = os.path.dirname(rootDir)
 
-    def addFile(self, path):
-        self.srcFiles.append(loadDicomFile(path))
-        self.lastLoadFileDir = os.path.dirname(path)
-
     def _loadSourceThread(self):
         """
         This is run in a daemon thread and continually checks self.srcQueue for a queued directory or zip file to scan
@@ -62,16 +65,28 @@ class Handler:
         while True:
             try:
                 src = self.srcQueue.get(True, 0.5)
-                loader = loadDicomDir if os.path.isdir(src) else loadDicomZip
+                if os.path.isdir(src):
+                    loader = loadDicomDir
+                elif zipfile.is_zipfile(src):
+                    loader = loadDicomZip
+                else:
+                    dicomFile = loadDicomFile(src)
+                    self.srcDicomFileObjectsDict[src] = dicomFile
+                    self.loadIsComplete = True
+                    continue
+
                 #  series = loader(src, self.statusSignal.emit)
                 series = loader(src)
                 self.srcList.append((src, series))
-                self.seriesFilesPathsList = series[0].sortedFileNames
-                print("ciao")
+                self.currentSeries = series[0].sortedFileNamesList
                 self.loadIsComplete = True
 
             except Empty:
                 pass
+
+    @property
+    def currSelectedSeriesIndex(self):
+        return self._currentSelectedSeriesIndex
 
     @classmethod
     def is_dicom_file(self, path: str) -> bool:
@@ -89,3 +104,8 @@ class Handler:
         directory = os.path.expanduser(directory)
         files = [os.path.join(directory, f) for f in sorted(os.listdir(directory))]
         return [f for f in files if self.is_dicom_file(f)]
+
+    @currSelectedSeriesIndex.setter
+    def currSelectedSeriesIndex(self, value):
+        if value >= 0:
+            self._currentSelectedSeriesIndex = value

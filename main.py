@@ -2,7 +2,6 @@ import sys
 from PyQt6 import QtWidgets, QtCore
 from PyQt6.QtCore import Qt
 from GUI.GUIMainWindow import GUIMainWindow
-from qt_material import apply_stylesheet
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
@@ -13,10 +12,9 @@ if __name__ == "__main__":
     app.setDesktopFileName("DICOM Visualizer")
 
     # setup stylesheet
-   # apply_stylesheet(app, theme = 'dark_teal.xml')
+    # apply_stylesheet(app, theme = 'dark_teal.xml')
 
-   # MainWindow = QtWidgets.QMainWindow()
+    # MainWindow = QtWidgets.QMainWindow()
     ui = GUIMainWindow()
     ui.start()
     sys.exit(app.exec())
-

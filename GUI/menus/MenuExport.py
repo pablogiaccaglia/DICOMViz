@@ -1,26 +1,33 @@
 from PyQt6 import QtWidgets, QtCore
 from PyQt6.QtWidgets import QMenu
+from pyqtgraph.GraphicsScene import exportDialog
 
 
 class MenuExport(QMenu):
+
     def __init__(self, menuBar):
         super().__init__(menuBar)
         self.menuBar = menuBar
         self.setObjectName("menuExport")
+        self.graphicsView = menuBar.window.graphicsView
 
         self.__defineActions()
         self.__addActions()
-        self.__retransalteUI()
+        self.__retranslateUI()
 
     def __defineActions(self):
         self.actionExportImages = QtWidgets.QWidgetAction(self.menuBar)
         self.actionExportImages.setObjectName("actionExportImages")
+        self.actionExportImages.triggered.connect(self.__exportImages)
 
         self.actionCopy_to_clipboard = QtWidgets.QWidgetAction(self.menuBar)
         self.actionCopy_to_clipboard.setObjectName("actionCopy_to_clipboard")
 
         self.actionCopy_all_to_clipboard = QtWidgets.QWidgetAction(self.menuBar)
         self.actionCopy_all_to_clipboard.setObjectName("actionCopy_all_to_clipboard")
+
+    def __exportImages(self):
+        self.graphicsView.showExportDialog()
 
     def __addActions(self):
         self.addAction(self.actionExportImages)
@@ -30,7 +37,7 @@ class MenuExport(QMenu):
         self.addAction(self.actionCopy_to_clipboard)
         self.addAction(self.actionCopy_all_to_clipboard)
 
-    def __retransalteUI(self):
+    def __retranslateUI(self):
         _translate = QtCore.QCoreApplication.translate
 
         self.setTitle(_translate("MainWindow", "Export"))

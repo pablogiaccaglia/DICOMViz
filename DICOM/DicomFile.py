@@ -1,15 +1,49 @@
-from pydicom import dicomio
-from DICOM.DicomAbstractContainer import DicomAbstractContainerClass
+import pydicom
 import os
+
+from DICOM.DicomAbstractContainer import DicomAbstractContainerClass, ViewMode
+import numpy
+
+from alterations import utils
 
 
 class DicomFile(DicomAbstractContainerClass):
 
-    def __init__(self, fileName):
-        self.rootDir = os.path.dirname(fileName)  # directory Dicoms were loaded from, files for this series may be in subdirectories
-        self.filename = fileName  # list of filenames for the Dicom associated with this series
+    def __init__(self, fileName, dicomData = None, dicomMasks = None, originalImg = None, segmentedLungsImg = None):
+        super().__init__()
+        self.rootDir = os.path.dirname(
+                fileName)  # directory Dicoms were loaded from, files for this series may be in subdirectories
+        self.filename = fileName  # DicomFile Object associated file path
+
+        if dicomData is None:
+            self.dicomData = pydicom.dcmread(self.filename)
+        else:
+            self.dicomData = dicomData
+
+        if originalImg is None:
+            self.originalImgNpArray = self.get_pixels_hu([self.dicomData])
+        else:
+            self.originalImgNpArray = numpy.array([originalImg], numpy.int16)
+
+        if dicomMasks is None:
+            self.dicomMasks = utils.getDicomMasks(self.originalImgNpArray, -70)
+        else:
+            self.dicomMasks = dicomMasks
+
+        if segmentedLungsImg is None:
+            self.segmentedLungsImg = utils.getSegmentedLungPixels(self.originalImgNpArray,
+                                                                  self.dicomMasks.segmentedLungsFill)
+        else:
+            self.segmentedLungsImg = segmentedLungsImg
+
         self.loadTag = ("", "")  # loaded abbreviated tag->(name,value)
-        self.imgCache = None
+
+        self.modes = {
+            ViewMode.ORIGINAL:                   self.originalImgNpArray,
+            ViewMode.LUNGS_MASK:                 self.dicomMasks.segmentedLungsFill,
+            ViewMode.SEGMENTED_LUNGS:            self.segmentedLungsImg,
+            ViewMode.SEGMENTED_LUNGS_W_INTERNAL: "SegmentedLungsWithInternalStructure",
+        }
 
     def addFile(self, filename, loadTag):
         """Add a filename and abbreviated tag map, previously stored file will be lost."""
@@ -19,7 +53,7 @@ class DicomFile(DicomAbstractContainerClass):
 
     def getTagObject(self, index = None):
         """Get the object storing tag information from Dicom file."""
-        dcm = dicomio.read_file(self.filename, stop_before_pixels = True)
+        dcm = pydicom.dcmread(self.filename, stop_before_pixels = True)
         return dcm
 
     def getExtraTagValues(self):
@@ -50,18 +84,15 @@ class DicomFile(DicomAbstractContainerClass):
 
         return tuple(str(dcm.get(n, extraVals.get(n, ""))) for n in names)
 
-    def getPixelData(self, index = None):
-        """Get the pixel data array for file at position `index` in self.filenames, or None if no pixel data."""
-        if not self.imgCache:
-                try:
-                    dcm = dicomio.read_file(self.filename)
-                    rslope = float(dcm.get("RescaleSlope", 1) or 1)
-                    rinter = float(dcm.get("RescaleIntercept", 0) or 0)
-                    img = dcm.pixel_array * rslope + rinter
+    def getPixelData(self, mode: ViewMode, index = 0):
+        if mode in self.modes:
+            return self.modes[mode]
+        else:
+            return None
 
-                except:
-                    img = None  # exceptions indicate that the pixel data doesn't exist or isn't readable so ignore
-
-                self.imgCache = img
-
-        return self.imgCache
+    def updateMasks(self, param):
+        self.dicomMasks = utils.getDicomMasks(self.originalImgNpArray, param)
+        self.segmentedLungsImg = utils.getSegmentedLungPixels(self.originalImgNpArray,
+                                                              self.dicomMasks.segmentedLungsFill)
+        self.modes[ViewMode.LUNGS_MASK] = self.dicomMasks.segmentedLungsFill
+        self.modes[ViewMode.SEGMENTED_LUNGS] = self.segmentedLungsImg

@@ -11,6 +11,7 @@ class MenuFiles(QMenu, QDialog):
         self.setToolTip("")
         self.setObjectName("menuFiles")
         self.menuBar = menuBar
+        self.window = menuBar.window
 
         # nested menu
         self.menuADD_DICOM_images = QtWidgets.QMenu(self)
@@ -60,43 +61,40 @@ class MenuFiles(QMenu, QDialog):
 
     def __openDICOMFolder(self):
         folderPath = QFileDialog.getExistingDirectory(self, "Select Directory",
-                                                      self.menuBar.window.dicomHandler.lastLoadFolderDir)
+                                                      self.window.dicomHandler.lastLoadFolderDir)
         if folderPath:
-            self.menuBar.window.handleFilesFromFolder(folderPath)
+            self.window.handleFilesFromFolder(folderPath)
 
     def __openDICOMFile(self):
         filePath = QFileDialog.getOpenFileName(self, 'Open file', "", "DICOM (*.dcm)")
 
         if filePath[0] != '':
-            self.menuBar.window.dicomHandler.addFile(filePath[0])
-            self.menuBar.window.data = self.menuBar.window.dicomHandler.srcFiles[0].getPixelData()
-            #  print(self.menuBar.window.data)
-            self.menuBar.window.graphicsView.setImageToView(self.menuBar.window.data)
+            self.window.handleSingleFiles(filePath[0])
 
     def __retranslateUI(self):
-        _translate = QtCore.QCoreApplication.translate
+            _translate = QtCore.QCoreApplication.translate
 
-        self.setTitle(_translate("MainWindow", "Files"))
-        self.menuADD_DICOM_images.setTitle(_translate("MainWindow", "ADD DICOM images"))
+            self.setTitle(_translate("MainWindow", "Files"))
+            self.menuADD_DICOM_images.setTitle(_translate("MainWindow", "ADD DICOM images"))
 
-        self.actionNewWindow.setText(_translate("MainWindow", "New window"))
-        self.actionNewWindow.setStatusTip(_translate("MainWindow", "Open new window"))
-        self.actionNewWindow.setShortcut(_translate("MainWindow", "Ctrl+V"))
+            self.actionNewWindow.setText(_translate("MainWindow", "New window"))
+            self.actionNewWindow.setStatusTip(_translate("MainWindow", "Open new window"))
+            self.actionNewWindow.setShortcut(_translate("MainWindow", "Ctrl+V"))
 
-        self.actionDuplicateWindow.setText(_translate("MainWindow", "Duplicate window"))
-        self.actionDuplicateWindow.setStatusTip(_translate("MainWindow", "Duplicate the current window"))
-        self.actionDuplicateWindow.setShortcut(_translate("MainWindow", "Ctrl+Shift+N"))
+            self.actionDuplicateWindow.setText(_translate("MainWindow", "Duplicate window"))
+            self.actionDuplicateWindow.setStatusTip(_translate("MainWindow", "Duplicate the current window"))
+            self.actionDuplicateWindow.setShortcut(_translate("MainWindow", "Ctrl+Shift+N"))
 
-        self.actionOpenDICOMFile.setText(_translate("MainWindow", "Open DICOM file"))
-        self.actionOpenDICOMFile.setStatusTip(_translate("MainWindow", "Open a DICOM file"))
-        self.actionOpenDICOMFile.setShortcut(_translate("MainWindow", "Ctrl+O"))
+            self.actionOpenDICOMFile.setText(_translate("MainWindow", "Open DICOM file"))
+            self.actionOpenDICOMFile.setStatusTip(_translate("MainWindow", "Open a DICOM file"))
+            self.actionOpenDICOMFile.setShortcut(_translate("MainWindow", "Ctrl+O"))
 
-        self.actionOpenDICOMFolder.setText(_translate("MainWindow", "Open DICOM folder"))
-        self.actionOpenDICOMFolder.setStatusTip(_translate("MainWindow", "Open DICOM folder"))
-        self.actionOpenDICOMFolder.setShortcut(_translate("MainWindow", "Ctrl+Shift+O"))
+            self.actionOpenDICOMFolder.setText(_translate("MainWindow", "Open DICOM folder"))
+            self.actionOpenDICOMFolder.setStatusTip(_translate("MainWindow", "Open DICOM folder"))
+            self.actionOpenDICOMFolder.setShortcut(_translate("MainWindow", "Ctrl+Shift+O"))
 
-        self.actionAddDICOMFile.setText(_translate("MainWindow", "Add DICOM file"))
-        self.actionAddDICOMFile.setStatusTip(_translate("MainWindow", "Add a new DICOM file"))
+            self.actionAddDICOMFile.setText(_translate("MainWindow", "Add DICOM file"))
+            self.actionAddDICOMFile.setStatusTip(_translate("MainWindow", "Add a new DICOM file"))
 
-        self.actionAddDICOMFolder.setText(_translate("MainWindow", "Add DICOM folder"))
-        self.actionAddDICOMFolder.setStatusTip(_translate("MainWindow", "ADD a new DICOM folder"))
+            self.actionAddDICOMFolder.setText(_translate("MainWindow", "Add DICOM folder"))
+            self.actionAddDICOMFolder.setStatusTip(_translate("MainWindow", "ADD a new DICOM folder"))

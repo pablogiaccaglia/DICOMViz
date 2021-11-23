@@ -5,14 +5,12 @@ from PyQt6 import QtCore, QtGui
 from PyQt6.QtCore import Qt, QModelIndex
 
 from DICOM.dicom import keywordNameMap
-from GUI.docks.Dock import Dock
 
 
-class SeriesExplorer(Dock, QtCore.QAbstractTableModel):
+class SeriesExplorer(QtCore.QAbstractTableModel):
     """This manages the list of series inside a Dock, displaying useful information and providing minimal sorting features."""
 
     def __init__(self, seriesColumns, name, window):
-        Dock.__init__(self, name, window)
         QtCore.QAbstractTableModel.__init__(self, window)
         self.seriesTable = []
         self.seriesColumns = seriesColumns

@@ -102,7 +102,6 @@ def loadDicomDir(rootdir, statusfunc = lambda s, c, n: None, numprocs = None):
                 seriesid = dcm.get("SeriesInstanceUID", "???")
                 if seriesid not in series:
                     series[seriesid] = DicomSeries(seriesid, rootdir)
-
                 series[seriesid].addFile(filename, dcm)
             except Empty:  # from queue.get(), keep trying so long as the loop condition is true
                 pass
@@ -157,8 +156,8 @@ def loadDicomZip(filename, statusfunc = lambda s, c, n: None):
 
                 s = series[seriesid]
                 s.addFile(nfilename, dcm)
-                s.tagCache[len(s.filenames) - 1] = dcm
-                s.imgCache[len(s.filenames) - 1] = img
+                s.tagCache[len(s.sortedFileNamesList) - 1] = dcm
+                s.imgCache[len(s.sortedFileNamesList) - 1] = img
 
             count += 1
             # update status only 100 times, doing it too frequently really slows things down

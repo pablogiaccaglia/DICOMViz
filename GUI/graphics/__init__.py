@@ -1,1 +1,1 @@
-from .GraphicsView import GraphicsView
+from .DICOMGraphicsView import DICOMGraphicsView

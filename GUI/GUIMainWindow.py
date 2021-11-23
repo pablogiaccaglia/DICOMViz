@@ -3,9 +3,11 @@ import time
 from PyQt6 import QtWidgets, QtCore
 from PyQt6.QtWidgets import QMainWindow, QGraphicsScene
 import DICOM
-from GUI.docks.Dock import Dock
+from DICOM.DicomAbstractContainer import ViewMode
+from GUI.docks.DockFiles import DockFiles
+from GUI.docks.DockSeries import DockSeries
 from GUI.menus.MenuBar import MenuBar
-from GUI.graphics.GraphicsView import GraphicsView
+from GUI.graphics.DICOMGraphicsView import DICOMGraphicsView
 from GUI.containers.TagsGroupBox import TagsGroupBox
 
 
@@ -14,23 +16,23 @@ class GUIMainWindow(QMainWindow):
 
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("DICOM Viewer")
+        self.setWindowTitle("DICOM Visualizer")
+        self.dicomHandler = DICOM.Handler(self)
 
         """creation of all Main Window QWidgets"""
 
         self.centralWidget = QtWidgets.QWidget(self)
         self.horizontalLayout = QtWidgets.QHBoxLayout(self.centralWidget)
-        self.graphicsView = GraphicsView(self.centralWidget)
+        self.graphicsView = DICOMGraphicsView(self)
         self.tagsGroupBox = TagsGroupBox(self.centralWidget)
         self.scene = QGraphicsScene()
         self.menuBar = MenuBar(self)
         self.statusBar = QtWidgets.QStatusBar(self)
 
-        self.seriesFilesDock = Dock("dockSeriesContents", self)
-        self.singleFilesDock = Dock("dockFilesContents", self)
+        self.seriesFilesDock = DockSeries(self)
+        self.singleFilesDock = DockFiles(self)
 
         self.setupUI()
-        self.dicomHandler = DICOM.Handler()
 
     def setupUI(self):
         """ Setup of all created Widgets """
@@ -49,7 +51,7 @@ class GUIMainWindow(QMainWindow):
         self.horizontalLayout.setObjectName("horizontalLayout")
 
         self.horizontalLayout.addWidget(self.graphicsView)
-        self.horizontalLayout.addWidget(self.tagsGroupBox)
+      #  self.horizontalLayout.addWidget(self.tagsGroupBox)
 
         self.setMenuBar(self.menuBar)
         self.setupDocks()
@@ -72,9 +74,19 @@ class GUIMainWindow(QMainWindow):
 
     def handleFilesFromFolder(self, folderPath):
         self.dicomHandler.addSource(folderPath)
+        time.sleep(30)
+        self.seriesFilesDock.loadFiles(self.dicomHandler.currentSeries)
+        self.dicomHandler.loadIsComplete = False  # TODO remove this
+
+    def handleSingleFiles(self, filePath):
+        self.dicomHandler.addSource(filePath)
         time.sleep(4)
-        self.seriesFilesDock.loadFiles(self.menuBar.window.dicomHandler.seriesFilesPathsList)
-        self.dicomHandler.loadIsComplete = False
+        self.singleFilesDock.loadFiles([self.dicomHandler.srcDicomFileObjectsDict[filePath]])
+        self.dicomHandler.loadIsComplete = False  # TODO remove this
+
+    def changeViewMode(self, mode: ViewMode):
+        self.dicomHandler.currentViewMode = mode
+        self.graphicsView.setImageToView(self.dicomHandler.currentShownDicomFileObject, mode)
 
     def start(self):
         self.show()
