@@ -25,7 +25,7 @@ class DockFiles(Dock):
         self.listView.setMinimumWidth(self.listView.sizeHintForColumn(0) + 20)
 
         if self.filesList:
-            self.window.graphicsView.setImageToView(dicomFileObject, viewMode = ViewMode.ORIGINAL)
+            self.window.graphicsView.setImageToView(dicomFileObject, viewMode = ViewMode.ORIGINAL, isFirstImage = True)
 
     def handleItemSelectionChange(self):
         if not len(self.listView.selectedItems()):
@@ -34,4 +34,4 @@ class DockFiles(Dock):
             item = self.listView.selectedItems()[0]
             filename = str(item.toolTip())
             selectedDicomFileObject = self.window.dicomHandler.srcDicomFileObjectsDict[filename]
-            self.window.graphicsView.setImageToView(selectedDicomFileObject, self.window.dicomHandler.currentViewMode)
+            self.window.graphicsView.setImageToView(selectedDicomFileObject, self.window.dicomHandler.currentViewMode, isFirstImage = False)
