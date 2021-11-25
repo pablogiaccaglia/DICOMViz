@@ -12,6 +12,7 @@ class DockSeries(Dock):
     def __init__(self, window):
         super().__init__("DockSeries", window)
         self.currentSeries = None
+        self.currentSeriesIndex = 0
 
     def loadFiles(self, files: List):
 
@@ -26,8 +27,8 @@ class DockSeries(Dock):
         self.listView.setMinimumWidth(self.listView.sizeHintForColumn(0) + 20)
 
         if self.filesList:
-            seriesIndex = self.window.dicomHandler.currSelectedSeriesIndex
-            self.currentSeries = self.window.dicomHandler.srcList[seriesIndex][1][0]
+            self.currentSeriesIndex = self.window.dicomHandler.currSelectedSeriesIndex
+            self.currentSeries = self.window.dicomHandler.srcList[self.currentSeriesIndex][1][0]
             self.window.graphicsView.setImageToView(self.currentSeries.dicomFilesList[0], viewMode = ViewMode.ORIGINAL, isFirstImage = True)
 
     def handleItemSelectionChange(self):
@@ -36,5 +37,5 @@ class DockSeries(Dock):
         else:
             item = self.listView.selectedItems()[0]
             filename = str(item.toolTip())
-            currentImageIndex = self.currentSeries.getIndexFromPath(filename)
-            self.window.graphicsView.setImageToView(self.currentSeries.getDicomFileAt(currentImageIndex), self.window.dicomHandler.currentViewMode, isFirstImage = False)
+            self.currentSeriesIndex = self.currentSeries.getIndexFromPath(filename)
+            self.window.graphicsView.setImageToView(self.currentSeries.getDicomFileAt(self.currentSeriesIndex), self.window.dicomHandler.currentViewMode, isFirstImage = False)

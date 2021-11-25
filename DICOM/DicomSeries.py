@@ -27,6 +27,11 @@ class DicomSeries(DicomAbstractContainer.DicomAbstractContainerClass):
         self.loadTags = []  # loaded abbreviated tag->(name,value) maps, 1 for each of self.filenames
         self.imgCache = {}  # image data cache, mapping index in self.filenames to arrays or None for non-images files
         self.tagCache = {}  # tag values cache, mapping index in self.filenames to OrderedDict of tag->(name,value) maps
+        self._size = 0
+
+    @property
+    def size(self):
+        return self._size
 
     def addFile(self, filename, loadTag):
         """Add a filename and abbreviated tag map to the series."""
@@ -142,7 +147,10 @@ class DicomSeries(DicomAbstractContainer.DicomAbstractContainerClass):
             currentSlice = support[i]
             originalImg = pixelsData[i]
 
-            dcmFile = DicomFile(fileName = self.sortedFileNamesList[i], dicomData = currentSlice, originalImg = originalImg)
+            dcmFile = DicomFile(fileName = self.sortedFileNamesList[i], dicomData = currentSlice,
+                                originalImg = originalImg)
             self.dicomFilesList.append(dcmFile)
             self.dicomFilesPathsDicts[self.sortedFileNamesList[i]] = i
             self.dicomFilesIndexesDict[i] = dcmFile
+
+        self._size = len(self.dicomFilesList)

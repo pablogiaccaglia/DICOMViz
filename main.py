@@ -18,3 +18,4 @@ if __name__ == "__main__":
     ui = GUIMainWindow()
     ui.start()
     sys.exit(app.exec())
+
