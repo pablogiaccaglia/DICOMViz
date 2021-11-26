@@ -1,8 +1,6 @@
 import os
 from typing import List
-
 from PyQt6 import QtWidgets
-
 from DICOM.DicomAbstractContainer import ViewMode
 from GUI.docks.Dock import Dock
 
@@ -13,6 +11,8 @@ class DockSeries(Dock):
         super().__init__("DockSeries", window)
         self.currentSeries = None
         self.currentSeriesIndex = 0
+        self.currentPosition = 0
+        self.scrollBarPos = 50
 
     def loadFiles(self, files: List):
 
@@ -29,7 +29,7 @@ class DockSeries(Dock):
         if self.filesList:
             self.currentSeriesIndex = self.window.dicomHandler.currSelectedSeriesIndex
             self.currentSeries = self.window.dicomHandler.srcList[self.currentSeriesIndex][1][0]
-            self.window.graphicsView.setImageToView(self.currentSeries.dicomFilesList[0], viewMode = ViewMode.ORIGINAL, isFirstImage = True)
+            self.window.dicomHandler.setImageToView(self.currentSeries.dicomFilesList[0], viewMode = ViewMode.ORIGINAL, isFirstImage = True)
 
     def handleItemSelectionChange(self):
         if not len(self.listView.selectedItems()):
@@ -37,5 +37,14 @@ class DockSeries(Dock):
         else:
             item = self.listView.selectedItems()[0]
             filename = str(item.toolTip())
-            self.currentSeriesIndex = self.currentSeries.getIndexFromPath(filename)
-            self.window.graphicsView.setImageToView(self.currentSeries.getDicomFileAt(self.currentSeriesIndex), self.window.dicomHandler.currentViewMode, isFirstImage = False)
+            self.currentPosition = self.currentSeries.getIndexFromPath(filename)
+            self.window.dicomHandler.setImageToView(self.currentSeries.getDicomFileAt(self.currentPosition), self.window.dicomHandler.currentViewMode, isFirstImage = False)
+
+    def setSelectedItem(self, index):
+        self.listView.item(index).setSelected(True)
+        self.currentSeriesIndex = index
+        self.currentRowChanged()
+
+    def currentRowChanged(self):
+        self.listView.verticalScrollBar().setValue(self.scrollBarPos)
+        self.scrollBarPos = self.scrollBarPos + 16.5

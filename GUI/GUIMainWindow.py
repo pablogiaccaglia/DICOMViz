@@ -1,6 +1,6 @@
 import time
 
-from PyQt6 import QtWidgets, QtCore
+from PyQt6 import QtWidgets, QtCore, QtGui
 from PyQt6.QtWidgets import QMainWindow, QGraphicsScene
 import DICOM
 from DICOM.DicomAbstractContainer import ViewMode
@@ -90,3 +90,6 @@ class GUIMainWindow(QMainWindow):
 
     def start(self):
         self.show()
+
+    def keyPressEvent(self, a0: QtGui.QKeyEvent) -> None:
+        self.graphicsView.gifHandler.keyPressEvent(a0)

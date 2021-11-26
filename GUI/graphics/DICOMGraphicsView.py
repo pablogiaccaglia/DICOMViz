@@ -1,7 +1,6 @@
 from enum import Enum
 
-from DICOM import DicomAbstractContainer
-from DICOM.DicomAbstractContainer import ViewMode
+from DICOM.DicomAbstractContainer import ViewMode, DicomAbstractContainerClass
 from GUI.graphics.CustomImageView import CustomImageView
 
 # VIEW MODES
@@ -29,6 +28,8 @@ class DICOMGraphicsView(CustomImageView):
         self.ui.histogram.sigLevelChangeFinished.connect(self.__updateHisto)
         self.ui.test.valueChanged.connect(self.__valueChange)
         self.gifHandler = None
+        self.ui.sliderb.setDisabled(True)
+        self.ui.sliderGroup.hide()
 
     def _setImageToView(self, img, mode: ViewMode, isFirstImage: bool):
 
@@ -49,19 +50,17 @@ class DICOMGraphicsView(CustomImageView):
         self.view.setBackgroundColor(bgColor.value)
         self.view.setMenuEnabled(True)
         self.setImage(img.T, autoRange = self.autoRangeOption, autoHistogramRange = self.autoHistogramRangeOption,
-                      autoLevels = self.autoLevelsOption)
+                      autoLevels = self.autoLevelsOption, levelMode = 'mono')
 
         if isFirstImage:
             self.autoLevels()
             self.optImageLevels = self._imageLevels
             self.autoLevelsOption = False
 
-    def setImageToView(self, DicomContainer: 'DicomAbstractContainer', viewMode: ViewMode, isFirstImage: bool):
+    def setImageToView(self, DicomContainer: 'DicomAbstractContainerClass', viewMode: ViewMode, isFirstImage: bool):
         try:
             if viewMode is not None:
                 self.currentViewMode = viewMode
-
-            print(str(self.currentViewMode))
 
             self.window.setWindowTitle("DICOM Visualizer : " + DicomContainer.filename)
             self.currentImageData = DicomContainer.getPixelData(mode = viewMode)
@@ -85,7 +84,6 @@ class DICOMGraphicsView(CustomImageView):
         self.optImageLevels = self._imageLevels
 
     def addGifHandler(self):
-        currentSeriesIndex = self.window.dicomHandler.currSelectedSeriesIndex
-        self.gifHandler = GIFHandler(self.window.dicomHandler.srcList[currentSeriesIndex][1][0],
-                                     currentSeriesIndex, self, self.window.dicomHandler)
-        self.gifHandler.start()
+            self.gifHandler = GIFHandler(self.window.seriesFilesDock, self, self.window.dicomHandler)
+            self.gifHandler.start()
+

@@ -12,6 +12,11 @@ class MenuCine(QMenu):
         self.__defineActions()
         self.__addActions()
         self.__retranslateUI()
+        self.disableAnimateAction(True)
+
+    def disableAnimateAction(self, b: bool):
+        self.actionAnimateSeries.setDisabled(b)
+        pass
 
     def __defineActions(self):
         self.actionAnimateSeries = QtWidgets.QWidgetAction(self.menuBar)

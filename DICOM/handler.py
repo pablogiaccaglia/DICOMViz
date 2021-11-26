@@ -3,7 +3,7 @@ import threading
 import zipfile
 from typing import List
 
-from DICOM.DicomAbstractContainer import ViewMode
+from DICOM.DicomAbstractContainer import ViewMode, DicomAbstractContainerClass
 from DICOM.dicom import loadDicomDir, loadDicomZip, loadDicomFile
 from multiprocessing import Queue
 from queue import Empty
@@ -30,8 +30,19 @@ class Handler:
         self.lastLoadFileDir = None
         self.loadIsComplete = False
         self.currentShownDicomFileObject = None
+        self.isFirstLoad = True
 
     # self.statusSignal.connect(self.setStatus)
+
+    def setImageToView(self, DicomContainer: 'DicomAbstractContainerClass', viewMode: ViewMode, isFirstImage: bool):
+
+        if self.isFirstLoad:
+            self.isFirstLoad = False
+            self.window.menuBar.menuExport.enableAllActions()
+
+        self.window.graphicsView.setImageToView(DicomContainer, viewMode, isFirstImage)
+
+
 
     def setStatus(self, msg, progress = 0, progressmax = 0):
         return
@@ -72,7 +83,9 @@ class Handler:
                 else:
                     dicomFile = loadDicomFile(src)
                     self.srcDicomFileObjectsDict[src] = dicomFile
+                    self._currentSelectedSeriesIndex = None
                     self.loadIsComplete = True
+                    self.window.menuBar.menuCine.disableAnimateAction(True)
                     continue
 
                 #  series = loader(src, self.statusSignal.emit)
@@ -80,6 +93,7 @@ class Handler:
                 self.srcList.append((src, series))
                 self.currentSeries = series[0].sortedFileNamesList
                 self.loadIsComplete = True
+                self.window.menuBar.menuCine.disableAnimateAction(False)
 
             except Empty:
                 pass
@@ -107,5 +121,5 @@ class Handler:
 
     @currSelectedSeriesIndex.setter
     def currSelectedSeriesIndex(self, value):
-        if value >= 0:
+        if value >= 0 or value is None:
             self._currentSelectedSeriesIndex = value

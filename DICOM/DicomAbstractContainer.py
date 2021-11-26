@@ -34,7 +34,7 @@ class DicomAbstractContainerClass(ABC):
         pass
 
     @abstractmethod
-    def getPixelData(self, index, mode: ViewMode = ViewMode.ORIGINAL):
+    def getPixelData(self, mode: ViewMode, index = 0):
         pass
 
     def get_pixels_hu(self, scans):
@@ -47,14 +47,18 @@ class DicomAbstractContainerClass(ABC):
             image[image == -2000] = 0
 
             # Convert to Hounsfield units (HU)
-            intercept = scans[0].RescaleIntercept
-            slope = scans[0].RescaleSlope
+            print(str(scans))
+            try: #TODO HANDLE FOR RGB
+                intercept = scans[0].RescaleIntercept
+                slope = scans[0].RescaleSlope
 
-            if slope != 1:
-                image = slope * image.astype(numpy.float64)
-                image = image.astype(numpy.int16)
+                if slope != 1:
+                    image = slope * image.astype(numpy.float64)
+                    image = image.astype(numpy.int16)
 
-            image += numpy.int16(intercept)
+                image += numpy.int16(intercept)
+            except:
+                pass
 
             return numpy.array(image, dtype = numpy.int16)
         except Exception as e:

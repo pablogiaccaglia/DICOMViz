@@ -3,10 +3,10 @@ from PyQt6.QtWidgets import QMenu
 
 
 class MenuAdjustments(QMenu):
+
     def __init__(self, menuBar):
         super().__init__()
         self.menuBar = menuBar
-
         self.setObjectName("menuAdjustements")
 
         self.__defineActions()

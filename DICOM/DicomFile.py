@@ -26,11 +26,15 @@ class DicomFile(DicomAbstractContainerClass):
             self.originalImgNpArray = numpy.array([originalImg], numpy.int16)
 
         if dicomMasks is None:
-            self.dicomMasks = utils.getDicomMasks(self.originalImgNpArray, -70)
+            try: # TODO HANDLE THIS FOR RGB
+                self.dicomMasks = utils.getDicomMasks(self.originalImgNpArray, -70)
+            except:
+                self.dicomMasks = None
+                pass
         else:
             self.dicomMasks = dicomMasks
 
-        if segmentedLungsImg is None:
+        if segmentedLungsImg is None and self.dicomMasks is not None:
             self.segmentedLungsImg = utils.getSegmentedLungPixels(self.originalImgNpArray,
                                                                   self.dicomMasks.segmentedLungsFill)
         else:
@@ -38,9 +42,11 @@ class DicomFile(DicomAbstractContainerClass):
 
         self.loadTag = ("", "")  # loaded abbreviated tag->(name,value)
 
+        val = self.dicomMasks.segmentedLungsFill if self.dicomMasks is not None else None
+
         self.modes = {
             ViewMode.ORIGINAL:                   self.originalImgNpArray,
-            ViewMode.LUNGS_MASK:                 self.dicomMasks.segmentedLungsFill,
+            ViewMode.LUNGS_MASK:                 val,
             ViewMode.SEGMENTED_LUNGS:            self.segmentedLungsImg,
             ViewMode.SEGMENTED_LUNGS_W_INTERNAL: "SegmentedLungsWithInternalStructure",
         }
