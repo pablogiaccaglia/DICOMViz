@@ -1,7 +1,18 @@
+import signal
 import sys
-from PyQt6 import QtWidgets, QtCore
-from PyQt6.QtCore import Qt
+
+from PyQt6 import QtWidgets
+from PyQt6.QtCore import Qt, QTimer
+from PyQt6.QtWidgets import QApplication
+
 from GUI.GUIMainWindow import GUIMainWindow
+
+
+def sigint_handler(*args):
+    """Handler for the SIGINT signal."""
+    sys.stderr.write('\r')
+    QApplication.quit()
+
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
@@ -17,5 +28,11 @@ if __name__ == "__main__":
     # MainWindow = QtWidgets.QMainWindow()
     ui = GUIMainWindow()
     ui.start()
-    sys.exit(app.exec())
 
+    signal.signal(signal.SIGINT, sigint_handler)
+
+    timer = QTimer()
+    timer.start(500)  # You may change this if you wish.
+    timer.timeout.connect(lambda: None)  # Let the interpreter run each 500 ms.
+
+    sys.exit(app.exec())

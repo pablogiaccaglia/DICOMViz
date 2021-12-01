@@ -70,13 +70,13 @@ class MenuFiles(AbstractMenu, QDialog):
         folderPath = QFileDialog.getExistingDirectory(self, "Select Directory",
                                                       self.window.dicomHandler.lastLoadFolderDir)
         if folderPath:
-            self.window.handleFilesFromFolder(folderPath)
+            self.window.dicomHandler.handleFilesFromFolder(folderPath)
 
     def __openDICOMFile(self):
         filePath = QFileDialog.getOpenFileName(self, 'Open file', "", "DICOM (*.dcm)")
 
         if filePath[0] != '':
-            self.window.handleSingleFiles(filePath[0])
+            self.window.dicomHandler.handleSingleFiles(filePath[0])
 
     def __retranslateUI(self):
             _translate = QtCore.QCoreApplication.translate
@@ -112,3 +112,12 @@ class MenuFiles(AbstractMenu, QDialog):
 
     def toggleActions(self, value: bool):
             self.actionRemoveFromView.setEnabled(value)
+
+    def toggleFilesActions(self, value: bool):
+            self.actionNewWindow.setEnabled(value)
+            self.actionDuplicateWindow.setEnabled(value)
+            self.actionAddDICOMFile.setEnabled(value)
+            self.actionOpenDICOMFile.setEnabled(value)
+            self.actionOpenDICOMFolder.setEnabled(value)
+            self.actionAddDICOMFolder.setEnabled(value)
+            self.menuADD_DICOM_images.setEnabled(value)

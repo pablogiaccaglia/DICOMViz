@@ -27,23 +27,23 @@ class DockSeries(Dock):
 
         if self.filesList:
             self.currentSeriesIndex = self.window.dicomHandler.currSelectedSeriesIndex
-            print(str(self.currentSeriesIndex))
             self.currentSeries = self.window.dicomHandler.srcList[self.currentSeriesIndex][1][0]
             self.window.dicomHandler.setImageToView(self.currentSeries.dicomFilesList[0], viewMode = ViewMode.ORIGINAL, isFirstImage = True)
+            self.setSelectedItem(index = 0)
 
     def handleItemSelectionChange(self):
         if not len(self.listView.selectedItems()):
-            self.window.graphicsView.setImageToView(None)
+            self.window.graphicsView.setImageToView(None, None, None)
         else:
+            self.window.dicomHandler.currSelectedSeriesIndex = self.currentSeriesIndex
             self.window.dicomHandler.toggleMenuOptions(True)
-            item = self.listView.selectedItems()[0]
+            item = self.getCurrentSelectedItem()
             filename = str(item.toolTip())
             self.currentPosition = self.currentSeries.getIndexFromPath(filename)
             self.window.dicomHandler.setImageToView(self.currentSeries.getDicomFileAt(self.currentPosition), self.window.dicomHandler.currentViewMode, isFirstImage = False)
 
     def setSelectedItem(self, index):
-        self.listView.item(index).setSelected(True)
-        self.currentPosition = index
+        super().setSelectedItem(index)
         self.currentRowChanged()
 
     def currentRowChanged(self):

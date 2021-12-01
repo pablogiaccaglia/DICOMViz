@@ -12,10 +12,12 @@ class MenuCine(AbstractMenu):
         self.__defineActions()
         self.__addActions()
         self.__retranslateUI()
-        self.toggleActions(False)
+        self.actionAnimateSeries.setEnabled(False)
 
     def toggleActions(self, enabled: bool):
-        self.actionAnimateSeries.setEnabled(enabled)
+        if enabled and self.menuBar.window.dicomHandler.isSeriesImageSelected():
+            self.actionAnimateSeries.setEnabled(enabled)
+
         pass
 
     def __defineActions(self):

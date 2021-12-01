@@ -235,7 +235,7 @@
     <string>100%  Ctrl+1</string>
    </property>
    <property name="statusTip">
-    <string>100% zoom in</string>
+    <string>100% zoomIn in</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+1</string>
@@ -246,7 +246,7 @@
     <string>200%  Ctrl+2</string>
    </property>
    <property name="statusTip">
-    <string>200% zoom in</string>
+    <string>200% zoomIn in</string>
    </property>
   </action>
   <action name="actionZoom400">
@@ -254,7 +254,7 @@
     <string>400%   Ctrl+3</string>
    </property>
    <property name="statusTip">
-    <string>400% zoom in</string>
+    <string>400% zoomIn in</string>
    </property>
   </action>
   <action name="actionZoom800">
@@ -262,7 +262,7 @@
     <string>800%   Ctrl+4</string>
    </property>
    <property name="statusTip">
-    <string>800% zoom in</string>
+    <string>800% zoomIn in</string>
    </property>
   </action>
   <action name="actionZoomIn">

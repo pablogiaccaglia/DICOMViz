@@ -3,21 +3,28 @@ import threading
 import zipfile
 from typing import List
 
+from PyQt6.QtCore import QObject, pyqtSignal
+from pyqtgraph.exporters import Exporter
+
 from DICOM.DicomAbstractContainer import ViewMode, DicomAbstractContainerClass
 from DICOM.dicom import loadDicomDir, loadDicomZip, loadDicomFile
 from multiprocessing import Queue
 from queue import Empty
 
 from GUI.graphics.CustomImageView import TRANSFORMATION
+from GUI.graphics.GIFExporter import GIFExporter
 from GUI.graphics.GIFHandler import GIFHandler
 
 
-class Handler:
+class Handler(QObject):
     # statusSignal = QtCore.pyqtSignal(str, int, int)  # signal for updating the status bar asynchronously
+
+    loadFilesIsComplete = pyqtSignal()
+    loadSeriesIsComplete = pyqtSignal()
 
     def __init__(self, window):
         # create the directory queue and loading thread objects
-        #   super().__init__()
+        super().__init__()
         self._currentSelectedSeriesIndex = 0
         self.currentViewMode = ViewMode.ORIGINAL
         self.window = window
@@ -31,12 +38,27 @@ class Handler:
         self.setStatus("")
         self.lastLoadFolderDir = None
         self.lastLoadFileDir = None
-        self.loadIsComplete = False
+        self.fileIsLoadedFunction = None
+        self.connectSignals()
         self.currentShownDicomFileObject = None
         self.isFirstLoad = True
         self.menus = None
 
+    def connectSignals(self):
+        self.loadSeriesIsComplete.connect(self.__handleDockSeriesLoad)
+        self.loadFilesIsComplete.connect(self.__handleDockFilesLoad)
+
     # self.statusSignal.connect(self.setStatus)
+
+    def __handleDockFilesLoad(self):
+        self.window.seriesFilesDock.unselectCurrentSelected()
+        self.window.singleFilesDock.loadFiles(self.fileIsLoadedFunction)
+        self.toggleFilesMenuOptions(True)
+
+    def __handleDockSeriesLoad(self):
+        self.window.singleFilesDock.unselectCurrentSelected()
+        self.window.seriesFilesDock.loadFiles(self.currentSeries)
+        self.toggleFilesMenuOptions(True)
 
     def setImageToView(self, DicomContainer: 'DicomAbstractContainerClass', viewMode: ViewMode, isFirstImage: bool):
 
@@ -88,9 +110,11 @@ class Handler:
         while True:
             try:
                 src = self.srcQueue.get(True, 0.5)
+                self.toggleFilesMenuOptions(False)
                 if os.path.isdir(src):
                     loader = loadDicomDir
                     self._currentSelectedSeriesIndex = 0
+
                 elif zipfile.is_zipfile(src):
                     loader = loadDicomZip
                     self._currentSelectedSeriesIndex = 0
@@ -98,14 +122,17 @@ class Handler:
                     dicomFile = loadDicomFile(src)
                     self.srcDicomFileObjectsDict[src] = dicomFile
                     self._currentSelectedSeriesIndex = None
-                    self.loadIsComplete = True
+                    self.lastLoadFileDir = src
+                    self.fileIsLoadedFunction = [self.srcDicomFileObjectsDict[self.lastLoadFileDir]]
+                    self.loadFilesIsComplete.emit()
                     continue
 
                 #  series = loader(src, self.statusSignal.emit)
                 series = loader(src)
                 self.srcList.append((src, series))
                 self.currentSeries = series[0].sortedFileNamesList
-                self.loadIsComplete = True
+                self.loadSeriesIsComplete.emit()
+
             except Empty:
                 pass
 
@@ -151,6 +178,10 @@ class Handler:
         for menu in self.menus:
             menu.toggleActions(value)
 
+    def toggleFilesMenuOptions(self, value: bool):
+        self.window.menuBar.menuFiles.toggleFilesActions(value)
+
+
     @property
     def menus(self) -> List:
         return self._menus
@@ -158,5 +189,22 @@ class Handler:
     @menus.setter
     def menus(self, value):
         self._menus = value
+
+    def handleFilesFromFolder(self, folderPath):
+        self.addSource(folderPath)
+
+    def handleSingleFiles(self, filePath):
+        self.addSource(filePath)
+
+    def handleGIFExporter(self) -> None:
+
+        if self.isSeriesImageSelected() and GIFExporter not in Exporter.Exporters:
+            GIFExporter.register()
+        else:
+            GIFExporter.unregister()
+
+    def isSeriesImageSelected(self) -> bool:
+        return self.window.seriesFilesDock.isSomethingSelected()
+
 
 

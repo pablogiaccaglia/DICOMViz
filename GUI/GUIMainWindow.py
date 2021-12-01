@@ -19,9 +19,7 @@ class GUIMainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("DICOM Visualizer")
-        self.dicomHandler = DICOM.Handler(self)
         self.graphicsView = DICOMGraphicsView(self)
-        self.menuBar = MenuBar(window = self)
 
         """creation of all Main Window QWidgets"""
 
@@ -32,8 +30,12 @@ class GUIMainWindow(QMainWindow):
         self.scene = QGraphicsScene()
         self.statusBar = QtWidgets.QStatusBar(self)
 
+        self.dicomHandler = DICOM.Handler(self)
+
         self.seriesFilesDock = DockSeries(self)
         self.singleFilesDock = DockFiles(self)
+
+        self.menuBar = MenuBar(window = self)
 
         self.setupUI()
 
@@ -75,18 +77,6 @@ class GUIMainWindow(QMainWindow):
 
         self.singleFilesDock.setSizePolicy(sizePolicy)
         self.addDockWidget(QtCore.Qt.DockWidgetArea(1), self.singleFilesDock)
-
-    def handleFilesFromFolder(self, folderPath):
-        self.dicomHandler.addSource(folderPath)
-        time.sleep(30)
-        self.seriesFilesDock.loadFiles(self.dicomHandler.currentSeries)
-        self.dicomHandler.loadIsComplete = False  # TODO remove this
-
-    def handleSingleFiles(self, filePath):
-        self.dicomHandler.addSource(filePath)
-        time.sleep(4)
-        self.singleFilesDock.loadFiles([self.dicomHandler.srcDicomFileObjectsDict[filePath]])
-        self.dicomHandler.loadIsComplete = False  # TODO remove this
 
     def changeViewMode(self, mode: ViewMode):
         self.dicomHandler.currentViewMode = mode

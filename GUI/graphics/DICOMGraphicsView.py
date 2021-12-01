@@ -75,9 +75,8 @@ class DICOMGraphicsView(CustomImageView):
             if DicomContainer is not None:
                 self.window.dicomHandler.currentShownDicomFileObject = DicomContainer
 
-        except Exception as exc:
-            print(exc)
-            self._setImageToView(None, viewMode.ORIGINAL, False)
+        except Exception as e:
+            self._setImageToView(None, ViewMode.ORIGINAL, False)
             self.window.setWindowTitle("DICOM Visualizer: No image")
 
     def removeImageFromView(self):

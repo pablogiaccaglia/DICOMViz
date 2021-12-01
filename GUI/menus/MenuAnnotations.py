@@ -12,7 +12,7 @@ class MenuAnnotations(AbstractMenu):
         pass
 
     def __addActions(self):
-      #  self.menuBar.addAction(self.QMenu.menuAction())
+        #  self.menuBar.addAction(self.QMenu.menuAction())
         pass
 
     def __retranslateUI(self):

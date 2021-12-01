@@ -27,7 +27,8 @@ class MenuExport(AbstractMenu):
         self.actionCopy_all_to_clipboard.setDisabled(True)
 
     def __exportImages(self):
-        self.menuBar.window.dicomHandler.prepareGifExporter()
+        if self.menuBar.window.dicomHandler.isSeriesImageSelected():
+            self.menuBar.window.dicomHandler.prepareGifExporter()
         self.graphicsView.showExportDialog()
 
 
