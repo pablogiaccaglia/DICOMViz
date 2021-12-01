@@ -1,16 +1,14 @@
 from functools import partial
 
 from PyQt6 import QtCore, QtWidgets
-from PyQt6.QtWidgets import QMenu
 from DICOM.DicomAbstractContainer import ViewMode
+from GUI.menus.AbstractMenu import AbstractMenu
 
 
-class MenuAlterations(QMenu):
+class MenuAlterations(AbstractMenu):
 
     def __init__(self, menuBar):
-        super().__init__(menuBar)
-        self.menuBar = menuBar
-        self.setObjectName("menuAlterations")
+        super().__init__(menuBar, "menuAlterations")
 
         self.__defineActions()
         self.__addActions()
@@ -18,10 +16,8 @@ class MenuAlterations(QMenu):
 
         self.viewModeMenuOptions = self.ViewModeMenuOptions(self)
         self.selectedViewModeMenuOption = self.viewModeMenuOptions.ORIGINAL
-        self.selectedViewModeMenuOption.setDisabled(True)
-
+        self.disableOptions()
         self.__connectActions()
-
 
     class ViewModeMenuOptions:
 
@@ -89,3 +85,16 @@ class MenuAlterations(QMenu):
         self.actionSegmentedLungsMaskWInternal.setText(_translate("MainWindow", "Lungs Internal Structure"))
         self.actionSegmentedLungsMaskWInternal.setStatusTip(_translate("MainWindow", "Lungs Internal Structure"))
         self.actionSegmentedLungsMaskWInternal.setShortcut(_translate("MainWindow", "*"))
+
+    def disableOptions(self):
+
+        self.actionDefaultView.setEnabled(False)
+        self.actionLungsMask.setEnabled(False)
+        self.actionSegmentedLungsMask.setEnabled(False)
+        self.actionSegmentedLungsMaskWInternal.setEnabled(False)
+
+    def toggleActions(self, value: bool):
+
+        self.actionLungsMask.setEnabled(value)
+        self.actionSegmentedLungsMask.setEnabled(value)
+        self.actionSegmentedLungsMaskWInternal.setEnabled(value)

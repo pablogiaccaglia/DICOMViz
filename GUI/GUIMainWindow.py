@@ -1,11 +1,13 @@
 import time
+from typing import List
 
 from PyQt6 import QtWidgets, QtCore, QtGui
-from PyQt6.QtWidgets import QMainWindow, QGraphicsScene
+from PyQt6.QtWidgets import QMainWindow, QGraphicsScene, QMenu
 import DICOM
 from DICOM.DicomAbstractContainer import ViewMode
 from GUI.docks.DockFiles import DockFiles
 from GUI.docks.DockSeries import DockSeries
+from GUI.graphics.GIFExporter import GIFExporter
 from GUI.menus.MenuBar import MenuBar
 from GUI.graphics.DICOMGraphicsView import DICOMGraphicsView
 from GUI.containers.TagsGroupBox import TagsGroupBox
@@ -18,15 +20,16 @@ class GUIMainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("DICOM Visualizer")
         self.dicomHandler = DICOM.Handler(self)
+        self.graphicsView = DICOMGraphicsView(self)
+        self.menuBar = MenuBar(window = self)
 
         """creation of all Main Window QWidgets"""
 
         self.centralWidget = QtWidgets.QWidget(self)
         self.horizontalLayout = QtWidgets.QHBoxLayout(self.centralWidget)
-        self.graphicsView = DICOMGraphicsView(self)
+
         self.tagsGroupBox = TagsGroupBox(self.centralWidget)
         self.scene = QGraphicsScene()
-        self.menuBar = MenuBar(self)
         self.statusBar = QtWidgets.QStatusBar(self)
 
         self.seriesFilesDock = DockSeries(self)
@@ -51,8 +54,9 @@ class GUIMainWindow(QMainWindow):
         self.horizontalLayout.setObjectName("horizontalLayout")
 
         self.horizontalLayout.addWidget(self.graphicsView)
-      #  self.horizontalLayout.addWidget(self.tagsGroupBox)
+        #  self.horizontalLayout.addWidget(self.tagsGroupBox)
 
+        self.dicomHandler.menus = self.menuBar.menus
         self.setMenuBar(self.menuBar)
         self.setupDocks()
 
@@ -92,4 +96,5 @@ class GUIMainWindow(QMainWindow):
         self.show()
 
     def keyPressEvent(self, a0: QtGui.QKeyEvent) -> None:
-        self.graphicsView.gifHandler.keyPressEvent(a0)
+        if self.graphicsView.gifHandler is not None:
+            self.graphicsView.gifHandler.keyPressEvent(a0)

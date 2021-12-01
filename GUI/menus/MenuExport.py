@@ -1,16 +1,11 @@
 from PyQt6 import QtWidgets, QtCore
-from PyQt6.QtWidgets import QMenu
-import dcmpi as dc
-from dcmpi import get_info as gi
-from dcmpi import get_meta, get_info, do_report
+from GUI.menus.AbstractMenu import AbstractMenu
 
 
-class MenuExport(QMenu):
+class MenuExport(AbstractMenu):
 
     def __init__(self, menuBar):
-        super().__init__(menuBar)
-        self.menuBar = menuBar
-        self.setObjectName("menuExport")
+        super().__init__(menuBar, "menuExport")
         self.graphicsView = menuBar.window.graphicsView
 
         self.__defineActions()
@@ -32,7 +27,9 @@ class MenuExport(QMenu):
         self.actionCopy_all_to_clipboard.setDisabled(True)
 
     def __exportImages(self):
+        self.menuBar.window.dicomHandler.prepareGifExporter()
         self.graphicsView.showExportDialog()
+
 
     def __addActions(self):
         self.addAction(self.actionExportImages)
@@ -59,7 +56,7 @@ class MenuExport(QMenu):
         self.actionCopy_all_to_clipboard.setStatusTip(_translate("MainWindow", "Copy all images to clipboard"))
         self.actionCopy_all_to_clipboard.setShortcut(_translate("MainWindow", "Shift+C"))
 
-    def enableAllActions(self):
-        self.actionExportImages.setEnabled(True)
-        self.actionCopy_to_clipboard.setEnabled(True)
-        self.actionCopy_all_to_clipboard.setEnabled(True)
+    def toggleActions(self, value: bool):
+        self.actionExportImages.setEnabled(value)
+        self.actionCopy_to_clipboard.setEnabled(value)
+        self.actionCopy_all_to_clipboard.setEnabled(value)

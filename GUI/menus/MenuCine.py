@@ -1,21 +1,21 @@
 from PyQt6 import QtCore, QtWidgets
 from PyQt6.QtWidgets import QMenu
 
+from GUI.menus.AbstractMenu import AbstractMenu
 
-class MenuCine(QMenu):
+
+class MenuCine(AbstractMenu):
 
     def __init__(self, menuBar):
-        super().__init__(menuBar)
-        self.menuBar = menuBar
-        self.setObjectName("menuCine")
+        super().__init__(menuBar, "menuCine")
 
         self.__defineActions()
         self.__addActions()
         self.__retranslateUI()
-        self.disableAnimateAction(True)
+        self.toggleActions(False)
 
-    def disableAnimateAction(self, b: bool):
-        self.actionAnimateSeries.setDisabled(b)
+    def toggleActions(self, enabled: bool):
+        self.actionAnimateSeries.setEnabled(enabled)
         pass
 
     def __defineActions(self):

@@ -15,6 +15,7 @@ class Dock(QDockWidget):
         self.listView.itemSelectionChanged.connect(self.handleItemSelectionChange)
         self.verticalLayout = QtWidgets.QVBoxLayout(self.dockContents)
         self.window = window
+        self.currentPosition = 0
 
         self.setFeatures(QDockWidget.DockWidgetFeature.DockWidgetMovable)
 
@@ -31,6 +32,12 @@ class Dock(QDockWidget):
 
     def handleItemSelectionChange(self):
         pass
+
+    def deselectItem(self):
+        try:
+            self.listView.item(self.currentPosition).setSelected(False)
+        except:
+            pass
 
     def loadFiles(self, files: List):
         pass

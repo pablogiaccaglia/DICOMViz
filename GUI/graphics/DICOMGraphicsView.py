@@ -1,7 +1,9 @@
 from enum import Enum
 
+import numpy
+
 from DICOM.DicomAbstractContainer import ViewMode, DicomAbstractContainerClass
-from GUI.graphics.CustomImageView import CustomImageView
+from GUI.graphics.CustomImageView import CustomImageView, TRANSFORMATION
 
 # VIEW MODES
 from GUI.graphics.GIFHandler import GIFHandler
@@ -20,7 +22,6 @@ class DICOMGraphicsView(CustomImageView):
 
         super().__init__(window)
         self.window = window
-        self.currentImageData = None
         self.scene.contextMenuItem = self.view
         self.view.setMenuEnabled(False)
         self.currentViewMode = None
@@ -28,16 +29,21 @@ class DICOMGraphicsView(CustomImageView):
         self.ui.histogram.sigLevelChangeFinished.connect(self.__updateHisto)
         self.ui.test.valueChanged.connect(self.__valueChange)
         self.gifHandler = None
-        self.ui.sliderb.setDisabled(True)
-        self.ui.sliderGroup.hide()
+        self.__disableButtons()
 
     def _setImageToView(self, img, mode: ViewMode, isFirstImage: bool):
 
         if img is None:  # if the image is None use the default "no image" object
             #  img = self.noImg
+            self.clear()
             self.view.setMenuEnabled(False)
             self.view.setBackgroundColor('black')
+            self.__disableButtons()
+            self.optImageLevels = self._imageLevels
+            self.autoLevelsOption = False
             return
+
+        self.__enableButtons()
 
         if mode == ViewMode.ORIGINAL:
             self.ui.sliderb.setDisabled(True)
@@ -63,8 +69,8 @@ class DICOMGraphicsView(CustomImageView):
                 self.currentViewMode = viewMode
 
             self.window.setWindowTitle("DICOM Visualizer : " + DicomContainer.filename)
-            self.currentImageData = DicomContainer.getPixelData(mode = viewMode)
-            self._setImageToView(img = self.currentImageData, mode = viewMode, isFirstImage = isFirstImage)
+            self.currentOriginalImageData = DicomContainer.getPixelData(mode = viewMode)
+            self._setImageToView(img = self.currentOriginalImageData, mode = viewMode, isFirstImage = isFirstImage)
 
             if DicomContainer is not None:
                 self.window.dicomHandler.currentShownDicomFileObject = DicomContainer
@@ -73,6 +79,9 @@ class DICOMGraphicsView(CustomImageView):
             print(exc)
             self._setImageToView(None, viewMode.ORIGINAL, False)
             self.window.setWindowTitle("DICOM Visualizer: No image")
+
+    def removeImageFromView(self):
+        self._setImageToView(None, ViewMode.ORIGINAL, True)
 
     def __valueChange(self):
         size = self.ui.test.value()
@@ -83,7 +92,42 @@ class DICOMGraphicsView(CustomImageView):
     def __updateHisto(self):
         self.optImageLevels = self._imageLevels
 
+    def __disableButtons(self):
+
+        self.ui.sliderb.setDisabled(True)
+        self.ui.optionsButton.setDisabled(True)
+        self.ui.roiBtn.setDisabled(True)
+        self.ui.menuBtn.setDisabled(True)
+        self.ui.normSubtractRadio.setDisabled(True)
+        self.ui.normDivideRadio.setDisabled(True)
+
+    def __enableButtons(self):
+
+        self.ui.sliderb.setEnabled(False)
+        self.ui.optionsButton.setEnabled(True)
+        self.ui.roiBtn.setEnabled(True)
+        self.ui.menuBtn.setEnabled(True)
+        self.ui.normSubtractRadio.setEnabled(True)
+        self.ui.normDivideRadio.setEnabled(True)
+
     def addGifHandler(self):
-            self.gifHandler = GIFHandler(self.window.seriesFilesDock, self, self.window.dicomHandler)
+            self.gifHandler = GIFHandler(dockSeries = self.window.seriesFilesDock, graphicsView = self, handler = self.window.dicomHandler)
             self.gifHandler.start()
+
+    def zoomIn(self):
+        self.view.zoomIn()
+
+    def zoomOut(self):
+        self.view.zoomOut()
+
+    def setViewSize(self, left, top, width, height):
+        self.view.setViewSize(left = left, top = top, width = width, height = height)
+
+    def applyTransformation(self, transformation: TRANSFORMATION):
+        self._setImageToView(img = self.executeTransformation(transformation).T, mode = self.currentViewMode, isFirstImage = False)
+
+    def clearTransformations(self):
+        self._setImageToView(img = self.currentOriginalImageData, mode = self.currentViewMode, isFirstImage = False)
+
+
 

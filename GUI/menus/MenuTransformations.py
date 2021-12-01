@@ -1,36 +1,59 @@
+from functools import partial
+
 from PyQt6 import QtCore, QtWidgets
-from PyQt6.QtWidgets import QMenu
+
+from GUI.graphics.CustomImageView import TRANSFORMATION
+from GUI.menus.AbstractMenu import AbstractMenu
 
 
-class MenuTransformations(QMenu):
+class MenuTransformations(AbstractMenu):
 
     def __init__(self, menuBar):
-        super().__init__(menuBar)
-        self.menuBar = menuBar
-        self.setObjectName("menuTransformations")
+        super().__init__(menuBar, "menuTransformations")
+        self.handler = menuBar.window.dicomHandler
 
         self.__defineActions()
         self.__addActions()
         self.__retranslateUI()
 
+        self.actions = [self.actionFlipVertical,
+                        self.actionFlipHorizontal,
+                        self.actionClearTransformations,
+                        self.actionRotate90DegreesCW,
+                        self.actionRotate180Degrees,
+                        self.actionRotate90degreesCCW]
+
+        self.toggleActions(False)
+
     def __defineActions(self):
         self.actionRotate90degreesCCW = QtWidgets.QWidgetAction(self.menuBar)
         self.actionRotate90degreesCCW.setObjectName("actionRotate90degreesCCW")
+        self.actionRotate90degreesCCW.triggered.connect(
+            partial(self.handler.applyTransformationToShownImage, TRANSFORMATION.ROTATE_90_CCW))
 
         self.actionRotate90DegreesCW = QtWidgets.QWidgetAction(self.menuBar)
         self.actionRotate90DegreesCW.setObjectName("actionRotate90DegreesCW")
+        self.actionRotate90DegreesCW.triggered.connect(
+            partial(self.handler.applyTransformationToShownImage, TRANSFORMATION.ROTATE_90_CW))
 
         self.actionRotate180Degrees = QtWidgets.QWidgetAction(self.menuBar)
         self.actionRotate180Degrees.setObjectName("actionRotate180Degrees")
+        self.actionRotate180Degrees.triggered.connect(
+            partial(self.handler.applyTransformationToShownImage, TRANSFORMATION.ROTATE_180))
 
         self.actionFlipHorizontal = QtWidgets.QWidgetAction(self.menuBar)
         self.actionFlipHorizontal.setObjectName("actionFlipHorizontal")
+        self.actionFlipHorizontal.triggered.connect(
+            partial(self.handler.applyTransformationToShownImage, TRANSFORMATION.FLIP_HORIZONTAL))
 
-        self.actionFlip_vertical = QtWidgets.QWidgetAction(self.menuBar)
-        self.actionFlip_vertical.setObjectName("actionFlip_vertical")
+        self.actionFlipVertical = QtWidgets.QWidgetAction(self.menuBar)
+        self.actionFlipVertical.setObjectName("actionFlip_vertical")
+        self.actionFlipVertical.triggered.connect(
+            partial(self.handler.applyTransformationToShownImage, TRANSFORMATION.FLIP_VERTICAL))
 
         self.actionClearTransformations = QtWidgets.QWidgetAction(self.menuBar)
         self.actionClearTransformations.setObjectName("actionClearTransformations")
+        self.actionClearTransformations.triggered.connect(self.handler.clearTransformationsToShownImage)
 
     def __addActions(self):
         self.addAction(self.actionRotate90degreesCCW)
@@ -40,7 +63,7 @@ class MenuTransformations(QMenu):
         self.addSeparator()
 
         self.addAction(self.actionFlipHorizontal)
-        self.addAction(self.actionFlip_vertical)
+        self.addAction(self.actionFlipVertical)
 
         self.addSeparator()
 
@@ -68,10 +91,15 @@ class MenuTransformations(QMenu):
         self.actionFlipHorizontal.setStatusTip(_translate("MainWindow", "Flip Horizontal"))
         self.actionFlipHorizontal.setShortcut(_translate("MainWindow", "Ctrl+J"))
 
-        self.actionFlip_vertical.setText(_translate("MainWindow", "Flip vertical"))
-        self.actionFlip_vertical.setStatusTip(_translate("MainWindow", "Flip vertical"))
-        self.actionFlip_vertical.setShortcut(_translate("MainWindow", "Ctrl+W"))
+        self.actionFlipVertical.setText(_translate("MainWindow", "Flip vertical"))
+        self.actionFlipVertical.setStatusTip(_translate("MainWindow", "Flip vertical"))
+        self.actionFlipVertical.setShortcut(_translate("MainWindow", "Ctrl+W"))
 
         self.actionClearTransformations.setText(_translate("MainWindow", "Clear transformations"))
         self.actionClearTransformations.setStatusTip(_translate("MainWindow", "Clear transformations"))
         self.actionClearTransformations.setShortcut(_translate("MainWindow", "Ctrl+Ù"))
+
+    def toggleActions(self, enable: bool):
+        for action in self.actions:
+            action.setEnabled(enable)
+

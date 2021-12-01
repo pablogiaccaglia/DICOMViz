@@ -1,16 +1,17 @@
 import time
 
 from PyQt6 import QtWidgets, QtCore
-from PyQt6.QtWidgets import QDialog, QFileDialog, QMenu
+from PyQt6.QtWidgets import QDialog, QFileDialog
+
+from GUI.menus.AbstractMenu import AbstractMenu
 
 
-class MenuFiles(QMenu, QDialog):
+class MenuFiles(AbstractMenu, QDialog):
 
     def __init__(self, menuBar):
-        super().__init__(menuBar)
+
+        super().__init__(menuBar, "menuFiles")
         self.setToolTip("")
-        self.setObjectName("menuFiles")
-        self.menuBar = menuBar
         self.window = menuBar.window
 
         # nested menu
@@ -43,6 +44,11 @@ class MenuFiles(QMenu, QDialog):
         self.actionAddDICOMFolder = QtWidgets.QWidgetAction(self.menuBar)
         self.actionAddDICOMFolder.setObjectName("actionAddDICOMFolder")
 
+        self.actionRemoveFromView = QtWidgets.QWidgetAction(self.menuBar)
+        self.actionRemoveFromView.setObjectName("actionRemoveFromView")
+        self.actionRemoveFromView.triggered.connect(self.menuBar.window.dicomHandler.removeImageFromView)
+        self.toggleActions(False)
+
     def __addActions(self):
         self.menuADD_DICOM_images.addAction(self.actionAddDICOMFile)
         self.menuADD_DICOM_images.addAction(self.actionAddDICOMFolder)
@@ -58,6 +64,7 @@ class MenuFiles(QMenu, QDialog):
         self.addSeparator()
 
         self.addAction(self.menuADD_DICOM_images.menuAction())
+        self.addAction(self.actionRemoveFromView)
 
     def __openDICOMFolder(self):
         folderPath = QFileDialog.getExistingDirectory(self, "Select Directory",
@@ -98,3 +105,10 @@ class MenuFiles(QMenu, QDialog):
 
             self.actionAddDICOMFolder.setText(_translate("MainWindow", "Add DICOM folder"))
             self.actionAddDICOMFolder.setStatusTip(_translate("MainWindow", "ADD a new DICOM folder"))
+
+            self.actionRemoveFromView.setText(_translate("MainWindow", "Remove image from view"))
+            self.actionRemoveFromView.setStatusTip(_translate("ManWindow", "Remove image from view"))
+            self.actionRemoveFromView.setShortcut(_translate("MainWindow", "§"))
+
+    def toggleActions(self, value: bool):
+            self.actionRemoveFromView.setEnabled(value)

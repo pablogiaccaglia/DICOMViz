@@ -11,7 +11,6 @@ class DockSeries(Dock):
         super().__init__("DockSeries", window)
         self.currentSeries = None
         self.currentSeriesIndex = 0
-        self.currentPosition = 0
         self.scrollBarPos = 50
 
     def loadFiles(self, files: List):
@@ -28,6 +27,7 @@ class DockSeries(Dock):
 
         if self.filesList:
             self.currentSeriesIndex = self.window.dicomHandler.currSelectedSeriesIndex
+            print(str(self.currentSeriesIndex))
             self.currentSeries = self.window.dicomHandler.srcList[self.currentSeriesIndex][1][0]
             self.window.dicomHandler.setImageToView(self.currentSeries.dicomFilesList[0], viewMode = ViewMode.ORIGINAL, isFirstImage = True)
 
@@ -35,6 +35,7 @@ class DockSeries(Dock):
         if not len(self.listView.selectedItems()):
             self.window.graphicsView.setImageToView(None)
         else:
+            self.window.dicomHandler.toggleMenuOptions(True)
             item = self.listView.selectedItems()[0]
             filename = str(item.toolTip())
             self.currentPosition = self.currentSeries.getIndexFromPath(filename)
@@ -42,7 +43,7 @@ class DockSeries(Dock):
 
     def setSelectedItem(self, index):
         self.listView.item(index).setSelected(True)
-        self.currentSeriesIndex = index
+        self.currentPosition = index
         self.currentRowChanged()
 
     def currentRowChanged(self):

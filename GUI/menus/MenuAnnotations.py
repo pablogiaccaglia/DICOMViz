@@ -1,12 +1,10 @@
 from PyQt6 import QtCore
-from PyQt6.QtWidgets import QMenu
+from GUI.menus.AbstractMenu import AbstractMenu
 
 
-class MenuAnnotations(QMenu):
+class MenuAnnotations(AbstractMenu):
     def __init__(self, menuBar):
-        super().__init__()
-        self.menuBar = menuBar
-        self.setObjectName("menuAnnotations")
+        super().__init__(menuBar, "menuAnnotations")
 
         self.__retranslateUI()
 

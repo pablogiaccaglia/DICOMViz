@@ -47,7 +47,6 @@ class DicomAbstractContainerClass(ABC):
             image[image == -2000] = 0
 
             # Convert to Hounsfield units (HU)
-            print(str(scans))
             try: #TODO HANDLE FOR RGB
                 intercept = scans[0].RescaleIntercept
                 slope = scans[0].RescaleSlope
@@ -62,7 +61,6 @@ class DicomAbstractContainerClass(ABC):
 
             return numpy.array(image, dtype = numpy.int16)
         except Exception as e:
-            print(str(e))
             return None
 
     def getImg(self):

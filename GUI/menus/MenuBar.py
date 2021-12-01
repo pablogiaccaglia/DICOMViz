@@ -1,3 +1,5 @@
+from typing import List
+
 from PyQt6 import QtCore
 from PyQt6.QtWidgets import QMenuBar
 
@@ -13,14 +15,22 @@ from GUI.menus import MenuZoom
 
 class MenuBar(QMenuBar):
     def __init__(self, window):
-        super().__init__()
+        super().__init__(window)
         self.window = window
+        self.setObjectName("menubar")
         self.__initMenuBar()
+        self.menus = [self.menuFiles,
+                      self.menuAdjustments,
+                      self.menuExport,
+                      self.menuCine,
+                      self.menuZoom,
+                      self.menuAnnotations,
+                      self.menuTransformations,
+                      self.menuAlterations]
 
     def __initMenuBar(self):
 
         self.setGeometry(QtCore.QRect(0, 0, 925, 22))
-        self.setObjectName("menubar")
 
         self.menuFiles = MenuFiles(self)
         self.addAction(self.menuFiles.menuAction())
@@ -52,3 +62,11 @@ class MenuBar(QMenuBar):
     def __retranslateUI(self):
         _translate = QtCore.QCoreApplication.translate
         self.setWindowTitle(_translate("MainWindow", "MainWindow"))
+
+    @property
+    def menus(self) -> List:
+        return self._menus
+
+    @menus.setter
+    def menus(self, value):
+        self._menus = value

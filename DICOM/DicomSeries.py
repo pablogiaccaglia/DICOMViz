@@ -77,6 +77,16 @@ class DicomSeries(DicomAbstractContainer.DicomAbstractContainerClass):
         """Get the pixel data array for file at position `index` in self.filenames, or None if no pixel data."""
         return self.getDicomFileAt(index).getPixelData(mode)
 
+    def getPixelDataList(self, mode: ViewMode = ViewMode.ORIGINAL):
+
+        pixelData = []
+
+        for index in range(0, self._size):
+            data = self.getPixelData(index, mode)[0, :, :]
+            pixelData.append(np.uint8(data))
+
+        return pixelData
+
     def getDicomFileAt(self, index):
         return self.dicomFilesList[index]
 

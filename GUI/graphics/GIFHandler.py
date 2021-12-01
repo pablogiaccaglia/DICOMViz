@@ -1,14 +1,13 @@
 from PyQt6 import QtCore
 from PyQt6.QtCore import QTimer
-
-from DICOM import Handler
 from GUI.docks.DockSeries import DockSeries
 from GUI.graphics import DICOMGraphicsView
+from GUI.graphics.GIFExporter import GIFExporter
 
 
 class GIFHandler:
 
-    def __init__(self, dockSeries: DockSeries, graphicsView: DICOMGraphicsView, handler: Handler):
+    def __init__(self, dockSeries: DockSeries, graphicsView: DICOMGraphicsView, handler):
         self.dockSeries = dockSeries
         self.currentSeriesIndex = dockSeries.currentSeriesIndex
         self.graphicsView = graphicsView
@@ -44,3 +43,7 @@ class GIFHandler:
                 self.stopped = False
                 self.currentImageIndex = self.dockSeries.currentPosition
                 self.start()
+
+    @classmethod
+    def prepareGIFExport(cls, data):
+        GIFExporter.setGIFData(data)

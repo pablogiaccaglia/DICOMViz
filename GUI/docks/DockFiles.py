@@ -29,8 +29,9 @@ class DockFiles(Dock):
 
     def handleItemSelectionChange(self):
         if not len(self.listView.selectedItems()):
-            self.window.graphicsView.setImageToView(None)
+            self.window.graphicsView.setImageToView(None, None, None)
         else:
+            self.window.dicomHandler.toggleMenuOptions(True)
             item = self.listView.selectedItems()[0]
             filename = str(item.toolTip())
             selectedDicomFileObject = self.window.dicomHandler.srcDicomFileObjectsDict[filename]

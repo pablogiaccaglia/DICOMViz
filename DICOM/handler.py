@@ -8,6 +8,9 @@ from DICOM.dicom import loadDicomDir, loadDicomZip, loadDicomFile
 from multiprocessing import Queue
 from queue import Empty
 
+from GUI.graphics.CustomImageView import TRANSFORMATION
+from GUI.graphics.GIFHandler import GIFHandler
+
 
 class Handler:
     # statusSignal = QtCore.pyqtSignal(str, int, int)  # signal for updating the status bar asynchronously
@@ -31,6 +34,7 @@ class Handler:
         self.loadIsComplete = False
         self.currentShownDicomFileObject = None
         self.isFirstLoad = True
+        self.menus = None
 
     # self.statusSignal.connect(self.setStatus)
 
@@ -38,11 +42,19 @@ class Handler:
 
         if self.isFirstLoad:
             self.isFirstLoad = False
-            self.window.menuBar.menuExport.enableAllActions()
+            self.toggleMenuOptions(True)
 
         self.window.graphicsView.setImageToView(DicomContainer, viewMode, isFirstImage)
 
+    def prepareGifExporter(self):
+        data = (self.srcList[self._currentSelectedSeriesIndex][1][0]).getPixelDataList(mode = self.currentViewMode)
+        GIFHandler.prepareGIFExport(data)
 
+    def removeImageFromView(self):
+        self.window.graphicsView.removeImageFromView()
+        self.window.seriesFilesDock.deselectItem()
+        self.window.singleFilesDock.deselectItem()
+        self.toggleMenuOptions(False)
 
     def setStatus(self, msg, progress = 0, progressmax = 0):
         return
@@ -78,14 +90,15 @@ class Handler:
                 src = self.srcQueue.get(True, 0.5)
                 if os.path.isdir(src):
                     loader = loadDicomDir
+                    self._currentSelectedSeriesIndex = 0
                 elif zipfile.is_zipfile(src):
                     loader = loadDicomZip
+                    self._currentSelectedSeriesIndex = 0
                 else:
                     dicomFile = loadDicomFile(src)
                     self.srcDicomFileObjectsDict[src] = dicomFile
                     self._currentSelectedSeriesIndex = None
                     self.loadIsComplete = True
-                    self.window.menuBar.menuCine.disableAnimateAction(True)
                     continue
 
                 #  series = loader(src, self.statusSignal.emit)
@@ -93,8 +106,6 @@ class Handler:
                 self.srcList.append((src, series))
                 self.currentSeries = series[0].sortedFileNamesList
                 self.loadIsComplete = True
-                self.window.menuBar.menuCine.disableAnimateAction(False)
-
             except Empty:
                 pass
 
@@ -123,3 +134,29 @@ class Handler:
     def currSelectedSeriesIndex(self, value):
         if value >= 0 or value is None:
             self._currentSelectedSeriesIndex = value
+
+    def isSomeImageShown(self) -> bool:
+        return self.getCurrentShownImage() is not None
+
+    def getCurrentShownImage(self):
+        return self.window.graphicsView.img
+
+    def applyTransformationToShownImage(self, transformation: TRANSFORMATION):
+        self.window.graphicsView.applyTransformation(transformation)
+
+    def clearTransformationsToShownImage(self):
+        self.window.graphicsView.clearTransformations()
+
+    def toggleMenuOptions(self, value: bool):
+        for menu in self.menus:
+            menu.toggleActions(value)
+
+    @property
+    def menus(self) -> List:
+        return self._menus
+
+    @menus.setter
+    def menus(self, value):
+        self._menus = value
+
+

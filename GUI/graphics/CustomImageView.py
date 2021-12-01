@@ -1,9 +1,21 @@
+from collections import namedtuple
+from enum import Enum
+
+import numpy
 import pyqtgraph
-
 from GUI.graphics.CustomViewBox import CustomViewBox
-
 from PyQt6 import QtWidgets, QtCore, QtGui
 from PyQt6.QtCore import Qt
+
+transformationTuple = namedtuple("transformationTuple", ["function", "partial_params"])
+
+
+class TRANSFORMATION(Enum):
+    ROTATE_90_CCW = transformationTuple(function = numpy.rot90, partial_params = (1, (1, 0)))
+    ROTATE_90_CW = transformationTuple(function = numpy.rot90, partial_params = (1, (0, 1)))
+    ROTATE_180 = transformationTuple(function = numpy.rot90, partial_params = (2, (1, 0)))
+    FLIP_HORIZONTAL = transformationTuple(function = numpy.fliplr, partial_params = None)
+    FLIP_VERTICAL = transformationTuple(function = numpy.flipud, partial_params = None)
 
 
 class CustomImageView(pyqtgraph.ImageView):
@@ -21,6 +33,22 @@ class CustomImageView(pyqtgraph.ImageView):
         self.autoHistogramRangeOption = True
         self.__addSliderButtonToImageView()
         self.__addOptionsButtonToImageView()
+        self.currentOriginalImageData = None
+
+    def executeTransformation(self, transformationEnum: TRANSFORMATION):
+
+        if self.image is None:
+            return
+
+        transformation = transformationEnum.value.function
+        partial_params = transformationEnum.value.partial_params
+
+        if partial_params is not None:
+            alteredImage = transformation(self.image, partial_params[0], partial_params[1])
+        else:
+            alteredImage = transformation(self.image)
+
+        return alteredImage
 
     def __addSliderButtonToImageView(self):
         self.ui.sliderb = QtWidgets.QPushButton(self.ui.layoutWidget)
@@ -131,6 +159,10 @@ class CustomImageView(pyqtgraph.ImageView):
         self.ui.autoHistogramRangeRadioButton.clicked.connect(self.__autoHistogramRangeRadioButtonClicked)
         self.ui.autoRangeRadioButton.clicked.connect(self.__autoRangeRadioButtonClicked)
         self.ui.autoLevelsRadioButton.clicked.connect(self.__autoLevelsRadioButtonClicked)
+
+    def autoRange(self):
+        super(CustomImageView, self).autoRange()
+        self.view.resetSize()
 
     def __sliderButtonClicked(self, b):
         self.ui.sliderGroup.setVisible(b)

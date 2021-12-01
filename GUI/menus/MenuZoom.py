@@ -1,39 +1,90 @@
+from enum import Enum
+
 from PyQt6 import QtWidgets, QtCore
-from PyQt6.QtWidgets import QMenu
+from functools import partial
+from builtins import tuple
+
+from GUI.menus.AbstractMenu import AbstractMenu
 
 
-class MenuZoom(QMenu):
+class ZoomAmount(tuple, Enum):
+    ZOOM_100 = (400, -49)
+    ZOOM_200 = (300, -98)
+    ZOOM_400 = (250, -119)
+    ZOOM_800 = (120, -182)
+
+
+class MenuZoom(AbstractMenu):
 
     def __init__(self, menuBar):
-        super().__init__(menuBar)
-        self.menuBar = menuBar
-        self.setObjectName("menuZoom")
+        super().__init__(menuBar, "menuZoom")
+        self.graphicsView = menuBar.window.graphicsView
 
         self.__defineActions()
         self.__addActions()
         self.__retranslateUI()
+        self.actions = [self.actionZoom100,
+                        self.actionZoom200,
+                        self.actionZoom400,
+                        self.actionZoom800,
+                        self.actionZoomIn,
+                        self.actionZoomOut,
+                        self.actionFillViewport]
+
+        self.toggleActions(False)
+
+    def toggleActions(self, value: bool):
+        for action in self.actions:
+            action.setEnabled(value)
 
     def __defineActions(self):
         self.actionFillViewport = QtWidgets.QWidgetAction(self.menuBar)
         self.actionFillViewport.setObjectName("actionFillViewport")
+        self.actionFillViewport.triggered.connect(self.graphicsView.autoRange)
 
         self.actionZoom100 = QtWidgets.QWidgetAction(self.menuBar)
         self.actionZoom100.setObjectName("actionZoom100")
+        self.actionZoom100.triggered.connect(
+            partial(self.graphicsView.setViewSize,
+                    ZoomAmount.ZOOM_100.value[1],
+                    ZoomAmount.ZOOM_100.value[1],
+                    ZoomAmount.ZOOM_100.value[0],
+                    ZoomAmount.ZOOM_100.value[0]))
 
         self.actionZoom200 = QtWidgets.QWidgetAction(self.menuBar)
         self.actionZoom200.setObjectName("actionZoom200")
+        self.actionZoom200.triggered.connect(
+            partial(self.graphicsView.setViewSize,
+                    ZoomAmount.ZOOM_200.value[1],
+                    ZoomAmount.ZOOM_200.value[1],
+                    ZoomAmount.ZOOM_200.value[0],
+                    ZoomAmount.ZOOM_200.value[0]))
 
         self.actionZoom400 = QtWidgets.QWidgetAction(self.menuBar)
         self.actionZoom400.setObjectName("actionZoom400")
+        self.actionZoom400.triggered.connect(
+            partial(self.graphicsView.setViewSize,
+                    ZoomAmount.ZOOM_400.value[1],
+                    ZoomAmount.ZOOM_400.value[1],
+                    ZoomAmount.ZOOM_400.value[0],
+                    ZoomAmount.ZOOM_400.value[0]))
 
         self.actionZoom800 = QtWidgets.QWidgetAction(self.menuBar)
         self.actionZoom800.setObjectName("actionZoom800")
+        self.actionZoom800.triggered.connect(
+            partial(self.graphicsView.setViewSize,
+                    ZoomAmount.ZOOM_800.value[1],
+                    ZoomAmount.ZOOM_800.value[1],
+                    ZoomAmount.ZOOM_800.value[0],
+                    ZoomAmount.ZOOM_800.value[0]))
 
         self.actionZoomIn = QtWidgets.QWidgetAction(self.menuBar)
         self.actionZoomIn.setObjectName("actionZoomIn")
+        self.actionZoomIn.triggered.connect(self.graphicsView.zoomIn)
 
         self.actionZoomOut = QtWidgets.QWidgetAction(self.menuBar)
         self.actionZoomOut.setObjectName("actionZoomOut")
+        self.actionZoomOut.triggered.connect(self.graphicsView.zoomOut)
 
     def __addActions(self):
         self.addAction(self.actionFillViewport)
