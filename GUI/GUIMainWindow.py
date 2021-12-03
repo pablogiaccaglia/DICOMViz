@@ -7,7 +7,6 @@ import DICOM
 from DICOM.DicomAbstractContainer import ViewMode
 from GUI.docks.DockFiles import DockFiles
 from GUI.docks.DockSeries import DockSeries
-from GUI.graphics.GIFExporter import GIFExporter
 from GUI.menus.MenuBar import MenuBar
 from GUI.graphics.DICOMGraphicsView import DICOMGraphicsView
 from GUI.containers.TagsGroupBox import TagsGroupBox

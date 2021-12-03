@@ -48,7 +48,6 @@ class GIFExporter(Exporter, QWidget):
 
     @classmethod
     def unregister(cls):
-
         try:
             Exporter.Exporters.remove(cls)
         except ValueError:

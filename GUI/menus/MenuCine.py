@@ -17,7 +17,8 @@ class MenuCine(AbstractMenu):
     def toggleActions(self, enabled: bool):
         if enabled and self.menuBar.window.dicomHandler.isSeriesImageSelected():
             self.actionAnimateSeries.setEnabled(enabled)
-
+        if not enabled:
+            self.actionAnimateSeries.setEnabled(enabled)
         pass
 
     def __defineActions(self):

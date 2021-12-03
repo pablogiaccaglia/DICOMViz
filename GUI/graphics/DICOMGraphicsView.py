@@ -1,6 +1,7 @@
 from enum import Enum
 
 import numpy
+from PyQt6 import QtWidgets
 
 from DICOM.DicomAbstractContainer import ViewMode, DicomAbstractContainerClass
 from GUI.graphics.CustomImageView import CustomImageView, TRANSFORMATION
@@ -27,9 +28,13 @@ class DICOMGraphicsView(CustomImageView):
         self.currentViewMode = None
         self.optImageLevels = None
         self.ui.histogram.sigLevelChangeFinished.connect(self.__updateHisto)
-        self.ui.test.valueChanged.connect(self.__valueChange)
+        self.ui.slider.valueChanged.connect(self.__valueChange)
         self.gifHandler = None
-        self.__disableButtons()
+        self.__toggleButtons(value = False)
+        self.toggleGifSlider(value = False)
+
+        from pyqtgraph.GraphicsScene.exportDialog import ExportDialog
+        self.scene.exportDialog = ExportDialog(self.scene)
 
     def _setImageToView(self, img, mode: ViewMode, isFirstImage: bool):
 
@@ -38,12 +43,14 @@ class DICOMGraphicsView(CustomImageView):
             self.clear()
             self.view.setMenuEnabled(False)
             self.view.setBackgroundColor('black')
-            self.__disableButtons()
+            self.__toggleButtons(value = False)
+            self.__hideActiveSections()
             self.optImageLevels = self._imageLevels
             self.autoLevelsOption = False
+
             return
 
-        self.__enableButtons()
+        self.__toggleButtons(value = True)
 
         if mode == ViewMode.ORIGINAL:
             self.ui.sliderb.setDisabled(True)
@@ -83,7 +90,7 @@ class DICOMGraphicsView(CustomImageView):
         self._setImageToView(None, ViewMode.ORIGINAL, True)
 
     def __valueChange(self):
-        size = self.ui.test.value()
+        size = self.ui.slider.value()
         dcm = self.window.dicomHandler.currentShownDicomFileObject
         dcm.updateMasks(size - 700)
         self.setImageToView(dcm, self.currentViewMode, isFirstImage = False)
@@ -91,27 +98,28 @@ class DICOMGraphicsView(CustomImageView):
     def __updateHisto(self):
         self.optImageLevels = self._imageLevels
 
-    def __disableButtons(self):
+    def __toggleButtons(self, value: bool):
 
         self.ui.sliderb.setDisabled(True)
-        self.ui.optionsButton.setDisabled(True)
-        self.ui.roiBtn.setDisabled(True)
-        self.ui.menuBtn.setDisabled(True)
-        self.ui.normSubtractRadio.setDisabled(True)
-        self.ui.normDivideRadio.setDisabled(True)
 
-    def __enableButtons(self):
+        self.ui.optionsButton.setEnabled(value)
+        self.ui.roiBtn.setEnabled(value)
+        self.ui.menuBtn.setEnabled(value)
+        self.ui.normSubtractRadio.setEnabled(value)
+        self.ui.normDivideRadio.setEnabled(value)
 
-        self.ui.sliderb.setEnabled(False)
-        self.ui.optionsButton.setEnabled(True)
-        self.ui.roiBtn.setEnabled(True)
-        self.ui.menuBtn.setEnabled(True)
-        self.ui.normSubtractRadio.setEnabled(True)
-        self.ui.normDivideRadio.setEnabled(True)
+    def toggleGifSlider(self, value: bool):
+        self.ui.gifSlider.setEnabled(value)
+
+    def toggleGifButton(self, value: bool):
+        self.ui.gifButton.setEnabled(value)
+        if value:
+            self.ui.sliderGroup.hide()
 
     def addGifHandler(self):
-            self.gifHandler = GIFHandler(dockSeries = self.window.seriesFilesDock, graphicsView = self, handler = self.window.dicomHandler)
-            self.gifHandler.start()
+        self.gifHandler = GIFHandler(dockSeries = self.window.seriesFilesDock, graphicsView = self,
+                                     handler = self.window.dicomHandler)
+        self.gifHandler.start()
 
     def zoomIn(self):
         self.view.zoomIn()
@@ -123,10 +131,23 @@ class DICOMGraphicsView(CustomImageView):
         self.view.setViewSize(left = left, top = top, width = width, height = height)
 
     def applyTransformation(self, transformation: TRANSFORMATION):
-        self._setImageToView(img = self.executeTransformation(transformation).T, mode = self.currentViewMode, isFirstImage = False)
+        self._setImageToView(img = self.executeTransformation(transformation).T, mode = self.currentViewMode,
+                             isFirstImage = False)
 
     def clearTransformations(self):
         self._setImageToView(img = self.currentOriginalImageData, mode = self.currentViewMode, isFirstImage = False)
 
+    def __hideActiveSections(self):
+        self.ui.sliderGroup.hide()
+        self.ui.optionsGroup.hide()
+        self.ui.normGroup.hide()
+        self.roi.hide()
+        self.normRgn.hide()
 
+    def updateExportDialog(self):
 
+        try:
+            self.scene.exportDialog.ui.formatList.clear()
+            self.scene.exportDialog.updateFormatList()
+        except:
+            pass

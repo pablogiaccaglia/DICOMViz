@@ -11,6 +11,9 @@ from DICOM.dicom import loadDicomDir, loadDicomZip, loadDicomFile
 from multiprocessing import Queue
 from queue import Empty
 
+from GUI.docks.Dock import Dock
+from GUI.docks.DockFiles import DockFiles
+from GUI.docks.DockSeries import DockSeries
 from GUI.graphics.CustomImageView import TRANSFORMATION
 from GUI.graphics.GIFExporter import GIFExporter
 from GUI.graphics.GIFHandler import GIFHandler
@@ -181,7 +184,6 @@ class Handler(QObject):
     def toggleFilesMenuOptions(self, value: bool):
         self.window.menuBar.menuFiles.toggleFilesActions(value)
 
-
     @property
     def menus(self) -> List:
         return self._menus
@@ -200,11 +202,33 @@ class Handler(QObject):
 
         if self.isSeriesImageSelected() and GIFExporter not in Exporter.Exporters:
             GIFExporter.register()
-        else:
+
+        elif self.isSingleFileSelected():
             GIFExporter.unregister()
 
     def isSeriesImageSelected(self) -> bool:
         return self.window.seriesFilesDock.isSomethingSelected()
 
+    def isSingleFileSelected(self) -> bool:
+        return self.window.singleFilesDock.isSomethingSelected()
 
+    def handleDocksClicks(self, dock: Dock) -> None:
+
+        try:
+            if isinstance(dock, DockSeries):
+                self.__toggleGifSlider(True)
+                self.window.singleFilesDock.deselectItem()
+                self.window.graphicsView.updateExportDialog()
+
+            elif isinstance(dock, DockFiles):
+                self.window.graphicsView.updateExportDialog()
+                self.__toggleGifSlider(False)
+                self.window.seriesFilesDock.deselectItem()
+                self.window.menuBar.menuCine.toggleActions(False)
+        except Exception as e:
+            print(str(e))
+            pass
+
+    def __toggleGifSlider(self, value: bool):
+        self.window.graphicsView.toggleGifSlider(value)
 

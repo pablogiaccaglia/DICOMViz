@@ -1,3 +1,4 @@
+from functools import partial
 from typing import List
 
 from PyQt6 import QtWidgets, QtCore
@@ -15,6 +16,7 @@ class Dock(QDockWidget):
         self.listView = QtWidgets.QListWidget(self.dockContents)
         self.listView.itemSelectionChanged.connect(self.handleItemSelectionChange)
         self.listView.itemSelectionChanged.connect(self.window.dicomHandler.handleGIFExporter)
+        self.listView.itemSelectionChanged.connect(partial(self.window.dicomHandler.handleDocksClicks, self))
         self.verticalLayout = QtWidgets.QVBoxLayout(self.dockContents)
         self.currentPosition = 0
 
@@ -37,7 +39,7 @@ class Dock(QDockWidget):
     def deselectItem(self):
         try:
             self.listView.item(self.currentPosition).setSelected(False)
-        except Exception as e:
+        except Exception:
             pass
 
     def loadFiles(self, files: List):
