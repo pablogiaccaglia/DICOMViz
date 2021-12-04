@@ -241,6 +241,9 @@ class Handler(QObject):
     def copyImageToClipboard(self):
         return self.window.graphicsView.copyImageToClipboard()
 
+    def enableNegativeImageAction(self):
+        self.window.menuBar.menuAlterations.enableNegativeImageAction()
+
 
 
 

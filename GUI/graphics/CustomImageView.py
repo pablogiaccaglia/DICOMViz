@@ -3,9 +3,8 @@ from enum import Enum
 
 import numpy
 import pyqtgraph
+from PyQt6.QtGui import QImage
 from PyQt6.QtWidgets import QApplication
-from pyqtgraph import GraphicsScene
-
 from GUI.graphics.CustomViewBox import CustomViewBox
 from PyQt6 import QtWidgets, QtCore, QtGui
 from PyQt6.QtCore import Qt
@@ -58,15 +57,16 @@ class CustomImageView(pyqtgraph.ImageView):
         return alteredImage
 
     def __addSliderButtonToImageView(self):
-        self.ui.sliderb = QtWidgets.QPushButton(self.ui.layoutWidget)
+
+        self.ui.sliderButton = QtWidgets.QPushButton(self.ui.layoutWidget)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(1)
-        sizePolicy.setHeightForWidth(self.ui.sliderb.sizePolicy().hasHeightForWidth())
-        self.ui.sliderb.setSizePolicy(sizePolicy)
-        self.ui.sliderb.setCheckable(True)
-        self.ui.sliderb.setObjectName("slider")
-        self.ui.gridLayout.addWidget(self.ui.sliderb, 2, 2, 1, 1)
+        sizePolicy.setHeightForWidth(self.ui.sliderButton.sizePolicy().hasHeightForWidth())
+        self.ui.sliderButton.setSizePolicy(sizePolicy)
+        self.ui.sliderButton.setCheckable(True)
+        self.ui.sliderButton.setObjectName("slider")
+        self.ui.gridLayout.addWidget(self.ui.sliderButton, 2, 2, 1, 1)
 
         self.ui.sliderGroup = QtWidgets.QGroupBox(self)
         self.ui.sliderGroup.setObjectName("sliderGroup")
@@ -87,13 +87,13 @@ class CustomImageView(pyqtgraph.ImageView):
         self.ui.gridLayoutSlider.addWidget(self.ui.slider, 0, 2, 1, 1)
         self.ui.gridLayout_3.addWidget(self.ui.sliderGroup, 15, 0, 1, 1)
 
-        self.ui.sliderb.setText(self._translate("Form", "Slider"))
+        self.ui.sliderButton.setText(self._translate("Form", "Slider"))
         self.ui.sliderGroup.setTitle(self._translate("Form", "Slider Frame"))
         self.ui.sliderGroup.hide()
 
         QtCore.QMetaObject.connectSlotsByName(self)
 
-        self.ui.sliderb.clicked.connect(self.__sliderButtonClicked)
+        self.ui.sliderButton.clicked.connect(self.__sliderButtonClicked)
 
     def __addOptionsButtonToImageView(self):
 
@@ -101,7 +101,7 @@ class CustomImageView(pyqtgraph.ImageView):
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.ui.sliderb.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(self.ui.sliderButton.sizePolicy().hasHeightForWidth())
         self.ui.optionsButton.setSizePolicy(sizePolicy)
         self.ui.optionsButton.setCheckable(True)
         self.ui.optionsButton.setObjectName("slider")

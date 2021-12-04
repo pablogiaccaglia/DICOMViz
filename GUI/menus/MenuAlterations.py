@@ -28,6 +28,7 @@ class MenuAlterations(AbstractMenu):
             self.SEGMENTED_LUNGS_W_INTERNAL = menuAlterations.actionSegmentedLungsMaskWInternal
 
     def __selectViewModeMenuOption(self, viewModeOption, viewMode: ViewMode):
+        self.enableNegativeImageAction()
         self.selectedViewModeMenuOption.setEnabled(True)
         self.selectedViewModeMenuOption = viewModeOption
         self.selectedViewModeMenuOption.setDisabled(True)
@@ -46,22 +47,32 @@ class MenuAlterations(AbstractMenu):
         self.actionSegmentedLungsMaskWInternal = QtWidgets.QWidgetAction(self.menuBar)
         self.actionSegmentedLungsMaskWInternal.setObjectName("actionSegmentedLungsWithInternal")
 
-    def __connectActions(self):
-        self.actionDefaultView.triggered.connect(partial(self.__selectViewModeMenuOption, self.viewModeMenuOptions.ORIGINAL,
-                                                 ViewMode.ORIGINAL))
+        self.actionNegative = QtWidgets.QWidgetAction(self.menuBar)
+        self.actionNegative.setObjectName("actionNegative")
 
-        self.actionLungsMask.triggered.connect(partial(self.__selectViewModeMenuOption, self.viewModeMenuOptions.LUNGS_MASK,
-                                               ViewMode.LUNGS_MASK))
+    def __connectActions(self):
+        self.actionDefaultView.triggered.connect(
+            partial(self.__selectViewModeMenuOption, self.viewModeMenuOptions.ORIGINAL,
+                    ViewMode.ORIGINAL))
+
+        self.actionLungsMask.triggered.connect(
+            partial(self.__selectViewModeMenuOption, self.viewModeMenuOptions.LUNGS_MASK,
+                    ViewMode.LUNGS_MASK))
 
         self.actionSegmentedLungsMask.triggered.connect(
-                partial(self.__selectViewModeMenuOption, self.viewModeMenuOptions.SEGMENTED_LUNGS, ViewMode.SEGMENTED_LUNGS))
+                partial(self.__selectViewModeMenuOption, self.viewModeMenuOptions.SEGMENTED_LUNGS,
+                        ViewMode.SEGMENTED_LUNGS))
 
         self.actionSegmentedLungsMaskWInternal.triggered.connect(
                 partial(self.__selectViewModeMenuOption, self.viewModeMenuOptions.SEGMENTED_LUNGS_W_INTERNAL,
-                ViewMode.SEGMENTED_LUNGS_W_INTERNAL))
+                        ViewMode.SEGMENTED_LUNGS_W_INTERNAL))
+
+        self.actionNegative.triggered.connect(
+                partial(self.menuBar.window.changeViewMode, ViewMode.NEGATIVE))
 
     def __addActions(self):
         self.addAction(self.actionDefaultView)
+        self.addAction(self.actionNegative)
         self.addAction(self.actionLungsMask)
         self.addAction(self.actionSegmentedLungsMask)
         self.addAction(self.actionSegmentedLungsMaskWInternal)
@@ -78,6 +89,10 @@ class MenuAlterations(AbstractMenu):
         self.actionDefaultView.setStatusTip(_translate("MainWindow", "DefaultView"))
         self.actionDefaultView.setShortcut(_translate("MainWindow", "+"))
 
+        self.actionNegative.setText(_translate("MainWindow", "Negative"))
+        self.actionNegative.setStatusTip(_translate("MainWindow", "Negative Image"))
+        self.actionNegative.setShortcut(_translate("MainWindow", "N"))
+
         self.actionSegmentedLungsMask.setText(_translate("MainWindow", "Segmented Lungs Mask"))
         self.actionSegmentedLungsMask.setStatusTip(_translate("MainWindow", "Segmented Lungs Mask"))
         self.actionSegmentedLungsMask.setShortcut(_translate("MainWindow", "/"))
@@ -87,14 +102,16 @@ class MenuAlterations(AbstractMenu):
         self.actionSegmentedLungsMaskWInternal.setShortcut(_translate("MainWindow", "*"))
 
     def disableOptions(self):
-
         self.actionDefaultView.setEnabled(False)
         self.actionLungsMask.setEnabled(False)
         self.actionSegmentedLungsMask.setEnabled(False)
         self.actionSegmentedLungsMaskWInternal.setEnabled(False)
+        self.actionNegative.setEnabled(False)
 
     def toggleActions(self, value: bool):
-
         self.actionLungsMask.setEnabled(value)
         self.actionSegmentedLungsMask.setEnabled(value)
         self.actionSegmentedLungsMaskWInternal.setEnabled(value)
+
+    def enableNegativeImageAction(self):
+        self.actionNegative.setEnabled(True)

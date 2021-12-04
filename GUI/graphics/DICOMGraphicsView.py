@@ -1,6 +1,8 @@
 from enum import Enum
 
+import numpy
 from PyQt6.QtGui import QPixmap
+from pyqtgraph import ImageItem
 
 from DICOM.DicomAbstractContainer import ViewMode, DicomAbstractContainerClass
 from GUI.graphics.CustomImageView import CustomImageView, TRANSFORMATION
@@ -14,6 +16,7 @@ class ViewModeBgColor(Enum):
     LUNGS_MASK = "black"
     SEGMENTED_LUNGS = "w"
     SEGMENTED_LUNGS_W_INTERNAL = "white"
+    NEGATIVE = "white"
 
 
 class DICOMGraphicsView(CustomImageView):
@@ -32,9 +35,12 @@ class DICOMGraphicsView(CustomImageView):
         self.gifHandler = None
         self.__toggleButtons(value = False)
         self.toggleGifSlider(value = False)
+        self.isNegative = False
 
         from pyqtgraph.GraphicsScene.exportDialog import ExportDialog
         self.scene.exportDialog = ExportDialog(self.scene)
+
+        self.currentBgColor = "black"
 
     def _setImageToView(self, img, mode: ViewMode, isFirstImage: bool):
 
@@ -53,14 +59,15 @@ class DICOMGraphicsView(CustomImageView):
         self.__toggleButtons(value = True)
 
         if mode == ViewMode.ORIGINAL:
-            self.ui.sliderb.setDisabled(True)
+            self.ui.sliderButton.setDisabled(True)
             self.ui.sliderGroup.hide()
         else:
-            self.ui.sliderb.setDisabled(False)
+            self.ui.sliderButton.setDisabled(False)
 
-        bgColor = ViewModeBgColor[ViewMode(mode).name]
+        if not (self.isNegative and mode is ViewMode.NEGATIVE):
+            self.currentBgColor = ViewModeBgColor[ViewMode(mode).name].value
 
-        self.view.setBackgroundColor(bgColor.value)
+        self.view.setBackgroundColor(self.currentBgColor)
         self.view.setMenuEnabled(True)
         self.setImage(img.T, autoRange = self.autoRangeOption, autoHistogramRange = self.autoHistogramRangeOption,
                       autoLevels = self.autoLevelsOption, levelMode = 'mono')
@@ -69,20 +76,35 @@ class DICOMGraphicsView(CustomImageView):
             self.autoLevels()
             self.optImageLevels = self._imageLevels
             self.autoLevelsOption = False
+            self.window.dicomHandler.enableNegativeImageAction()
 
     def setImageToView(self, DicomContainer: 'DicomAbstractContainerClass', viewMode: ViewMode, isFirstImage: bool):
         try:
-            if viewMode is not None:
-                self.currentViewMode = viewMode
+
+            if viewMode is not None and viewMode is not ViewMode.NEGATIVE:
+                    self.currentViewMode = viewMode
 
             self.window.setWindowTitle("DICOM Visualizer : " + DicomContainer.filename)
-            self.currentOriginalImageData = DicomContainer.getPixelData(mode = viewMode)
-            self._setImageToView(img = self.currentOriginalImageData, mode = viewMode, isFirstImage = isFirstImage)
+
+            if viewMode is ViewMode.NEGATIVE:
+                self.currentOriginalImageData = DicomContainer.getPixelData(mode = self.currentViewMode)
+                self.isNegative = not self.isNegative
+
+            else:
+                self.currentOriginalImageData = DicomContainer.getPixelData(mode = viewMode)
+
+            image = self.currentOriginalImageData
+
+            if self.isNegative:
+                image = numpy.invert(self.currentOriginalImageData)
+
+            self._setImageToView(img = image, mode = viewMode, isFirstImage = isFirstImage)
 
             if DicomContainer is not None:
                 self.window.dicomHandler.currentShownDicomFileObject = DicomContainer
 
-        except:
+        except Exception as e:
+            print(str(e))
             self._setImageToView(None, ViewMode.ORIGINAL, False)
             self.window.setWindowTitle("DICOM Visualizer: No image")
 
@@ -104,7 +126,7 @@ class DICOMGraphicsView(CustomImageView):
 
     def __toggleButtons(self, value: bool):
 
-        self.ui.sliderb.setDisabled(True)
+        self.ui.sliderButton.setDisabled(True)
 
         self.ui.optionsButton.setEnabled(value)
         self.ui.roiBtn.setEnabled(value)

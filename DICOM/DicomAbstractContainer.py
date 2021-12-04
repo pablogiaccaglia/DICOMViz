@@ -10,6 +10,7 @@ class ViewMode(Enum):
         LUNGS_MASK = "LUNGS_MASK"
         SEGMENTED_LUNGS = "SEGMENTED_LUNGS"
         SEGMENTED_LUNGS_W_INTERNAL = "SEGMENTED_LUNGS_W_INTERNAL"
+        NEGATIVE = "NEGATIVE"
 
 
 class DicomAbstractContainerClass(ABC):
