@@ -1,7 +1,6 @@
 from enum import Enum
 
-import numpy
-from PyQt6 import QtWidgets
+from PyQt6.QtGui import QPixmap
 
 from DICOM.DicomAbstractContainer import ViewMode, DicomAbstractContainerClass
 from GUI.graphics.CustomImageView import CustomImageView, TRANSFORMATION
@@ -28,7 +27,8 @@ class DICOMGraphicsView(CustomImageView):
         self.currentViewMode = None
         self.optImageLevels = None
         self.ui.histogram.sigLevelChangeFinished.connect(self.__updateHisto)
-        self.ui.slider.valueChanged.connect(self.__valueChange)
+        self.ui.slider.valueChanged.connect(self.__sliderValueChange)
+        self.ui.gifSlider.valueChanged.connect(self.__gifSliderValueChange)
         self.gifHandler = None
         self.__toggleButtons(value = False)
         self.toggleGifSlider(value = False)
@@ -82,18 +82,22 @@ class DICOMGraphicsView(CustomImageView):
             if DicomContainer is not None:
                 self.window.dicomHandler.currentShownDicomFileObject = DicomContainer
 
-        except Exception as e:
+        except:
             self._setImageToView(None, ViewMode.ORIGINAL, False)
             self.window.setWindowTitle("DICOM Visualizer: No image")
 
     def removeImageFromView(self):
         self._setImageToView(None, ViewMode.ORIGINAL, True)
 
-    def __valueChange(self):
+    def __sliderValueChange(self):
         size = self.ui.slider.value()
         dcm = self.window.dicomHandler.currentShownDicomFileObject
         dcm.updateMasks(size - 700)
         self.setImageToView(dcm, self.currentViewMode, isFirstImage = False)
+
+    def __gifSliderValueChange(self):
+        speed = self.ui.gifSlider.value()
+        self.window.dicomHandler.updateGifSpeedOnDialog(value = speed)
 
     def __updateHisto(self):
         self.optImageLevels = self._imageLevels
@@ -145,7 +149,6 @@ class DICOMGraphicsView(CustomImageView):
         self.normRgn.hide()
 
     def updateExportDialog(self):
-
         try:
             self.scene.exportDialog.ui.formatList.clear()
             self.scene.exportDialog.updateFormatList()

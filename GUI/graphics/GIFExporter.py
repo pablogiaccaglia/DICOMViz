@@ -16,6 +16,7 @@ class GIFExporter(Exporter, QWidget):
     windows = []
     GIFData = None
     exportGIFSignal = QtCore.pyqtSignal()
+    speed = 50
 
     def __init__(self, item):
 
@@ -25,7 +26,7 @@ class GIFExporter(Exporter, QWidget):
 
         self.width = int(tr.width())
         self.height = int(tr.height())
-        self.speed = 50
+        self.speed = GIFExporter.speed
         self.exportGIFSignal.connect(self.saveGIF)
 
         self.params = Parameter(name = 'params', type = 'group', children = [

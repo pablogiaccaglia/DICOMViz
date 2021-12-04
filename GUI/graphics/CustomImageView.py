@@ -3,12 +3,15 @@ from enum import Enum
 
 import numpy
 import pyqtgraph
+from PyQt6.QtWidgets import QApplication
+from pyqtgraph import GraphicsScene
 
 from GUI.graphics.CustomViewBox import CustomViewBox
 from PyQt6 import QtWidgets, QtCore, QtGui
 from PyQt6.QtCore import Qt
 
 transformationTuple = namedtuple("transformationTuple", ["function", "partial_params"])
+translate = QtCore.QCoreApplication.translate
 
 
 class TRANSFORMATION(Enum):
@@ -28,7 +31,7 @@ class CustomImageView(pyqtgraph.ImageView):
         """
         Constructor of the widget
         """
-        super(CustomImageView, self).__init__(parent, view = CustomViewBox())
+        super(CustomImageView, self).__init__(parent, view = CustomViewBox(imageView = self))
         self._translate = QtCore.QCoreApplication.translate
         self.autoRangeOption = False
         self.autoLevelsOption = True
@@ -37,6 +40,7 @@ class CustomImageView(pyqtgraph.ImageView):
         self.__addOptionsButtonToImageView()
         self.currentOriginalImageData = None
         self.ui.gifSlider.valueChanged.connect(self.__updateSliderOptionsValue)
+        self.__addCopyActionToImageViewMenu()
 
     def executeTransformation(self, transformationEnum: TRANSFORMATION):
 
@@ -182,7 +186,7 @@ class CustomImageView(pyqtgraph.ImageView):
         self.ui.autoRangeRadioButton.setText(self._translate("Form", "Auto Range"))
         self.ui.autoLevelsRadioButton.setText(self._translate("Form", "Auto Levels"))
         self.ui.autoHistogramRangeRadioButton.setText(self._translate("Form", "Auto Histogram Range"))
-        self.ui.labelGifSliderValue.setText(self._translate("Form",  str(self.ui.gifSlider.value())))
+        self.ui.labelGifSliderValue.setText(self._translate("Form", str(self.ui.gifSlider.value())))
 
         self.ui.labelGifSlider.setText(self._translate("Form", "Speed"))
         self.ui.optionsGroup.hide()
@@ -224,3 +228,16 @@ class CustomImageView(pyqtgraph.ImageView):
         self.autoLevelsOption = self.ui.autoLevelsRadioButton.isChecked()
         if self.autoLevelsOption:
             self.autoLevels()
+
+    def __addCopyActionToImageViewMenu(self):
+        self.buildMenu()
+        self.copyAction = QtGui.QAction(translate("ImageView", "Copy"), self.menu)
+        self.copyAction.triggered.connect(self.copyImageToClipboard)
+        self.menu.addAction(self.copyAction)
+
+    def getQImage(self):
+        return self.imageItem.qimage
+
+    def copyImageToClipboard(self):
+        qImage = self.getQImage()
+        QApplication.clipboard().setImage(qImage)

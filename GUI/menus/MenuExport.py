@@ -1,4 +1,7 @@
 from PyQt6 import QtWidgets, QtCore
+from PyQt6.QtGui import QClipboard
+from PyQt6.QtWidgets import QApplication
+
 from GUI.menus.AbstractMenu import AbstractMenu
 
 
@@ -20,6 +23,7 @@ class MenuExport(AbstractMenu):
 
         self.actionCopy_to_clipboard = QtWidgets.QWidgetAction(self.menuBar)
         self.actionCopy_to_clipboard.setObjectName("actionCopy_to_clipboard")
+        self.actionCopy_to_clipboard.triggered.connect(self.__copyToClipboard)
         self.actionCopy_to_clipboard.setDisabled(True)
 
         self.actionCopy_all_to_clipboard = QtWidgets.QWidgetAction(self.menuBar)
@@ -61,3 +65,7 @@ class MenuExport(AbstractMenu):
         self.actionExportImages.setEnabled(value)
         self.actionCopy_to_clipboard.setEnabled(value)
         self.actionCopy_all_to_clipboard.setEnabled(value)
+
+    def __copyToClipboard(self):
+        self.menuBar.window.dicomHandler.copyImageToClipboard()
+

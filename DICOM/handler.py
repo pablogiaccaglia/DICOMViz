@@ -232,3 +232,15 @@ class Handler(QObject):
     def __toggleGifSlider(self, value: bool):
         self.window.graphicsView.toggleGifSlider(value)
 
+    def updateGifSpeedOnDialog(self, value):
+        GIFExporter.speed = value
+        self.window.graphicsView.updateExportDialog()
+        exportersLen = self.window.graphicsView.scene.exportDialog.ui.formatList.count() - 1
+        self.window.graphicsView.scene.exportDialog.ui.formatList.setCurrentRow(exportersLen)
+
+    def copyImageToClipboard(self):
+        return self.window.graphicsView.copyImageToClipboard()
+
+
+
+
