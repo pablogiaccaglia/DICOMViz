@@ -79,7 +79,7 @@ class GUIMainWindow(QMainWindow):
 
     def changeViewMode(self, mode: ViewMode):
         self.dicomHandler.currentViewMode = mode
-        self.graphicsView.setImageToView(self.dicomHandler.currentShownDicomFileObject, mode, True)
+        self.graphicsView.setImageToView(self.dicomHandler.currentShownDicomFileObject, mode, False)
 
     def start(self):
         self.show()

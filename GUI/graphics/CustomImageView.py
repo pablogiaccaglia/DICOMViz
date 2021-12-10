@@ -1,10 +1,13 @@
-from collections import namedtuple
+from collections import namedtuple, OrderedDict
 from enum import Enum
+from functools import partial
 
 import numpy
 import pyqtgraph
-from PyQt6.QtGui import QImage
 from PyQt6.QtWidgets import QApplication
+from pyqtgraph.graphicsItems.GradientEditorItem import Gradients
+
+from GUI.graphics.ColorDialog import ColorAction
 from GUI.graphics.CustomViewBox import CustomViewBox
 from PyQt6 import QtWidgets, QtCore, QtGui
 from PyQt6.QtCore import Qt
@@ -39,7 +42,8 @@ class CustomImageView(pyqtgraph.ImageView):
         self.__addOptionsButtonToImageView()
         self.currentOriginalImageData = None
         self.ui.gifSlider.valueChanged.connect(self.__updateSliderOptionsValue)
-        self.__addCopyActionToImageViewMenu()
+        self.__addMoreActionsToImageViewMenu()
+        self.__addMoreColorMaps()
 
     def executeTransformation(self, transformationEnum: TRANSFORMATION):
 
@@ -94,6 +98,8 @@ class CustomImageView(pyqtgraph.ImageView):
         QtCore.QMetaObject.connectSlotsByName(self)
 
         self.ui.sliderButton.clicked.connect(self.__sliderButtonClicked)
+
+        self.__additionalGradients = None
 
     def __addOptionsButtonToImageView(self):
 
@@ -229,11 +235,24 @@ class CustomImageView(pyqtgraph.ImageView):
         if self.autoLevelsOption:
             self.autoLevels()
 
-    def __addCopyActionToImageViewMenu(self):
+    def __addMoreActionsToImageViewMenu(self):
         self.buildMenu()
+        self.__addChangeBackgroundColorActionToImageViewMenu()
+        self.__addCopyActionToImageViewMenu()
+
+    def __addCopyActionToImageViewMenu(self):
         self.copyAction = QtGui.QAction(translate("ImageView", "Copy"), self.menu)
         self.copyAction.triggered.connect(self.copyImageToClipboard)
         self.menu.addAction(self.copyAction)
+
+    def __addChangeBackgroundColorActionToImageViewMenu(self):
+        self.changeBgColorAction = ColorAction(translate("ImageView", "Change Background Color"), self.menu)
+        self.menu.addAction(self.changeBgColorAction)
+
+        self.changeBgColorAction.colorChangedSignal.connect(self.setBackgroundColorOnSignal)
+
+    def setBackgroundColorOnSignal(self):
+        self.view.setBackgroundColor(self.changeBgColorAction.color)
 
     def getQImage(self):
         return self.imageItem.qimage
@@ -241,3 +260,60 @@ class CustomImageView(pyqtgraph.ImageView):
     def copyImageToClipboard(self):
         qImage = self.getQImage()
         QApplication.clipboard().setImage(qImage)
+
+    def __addMoreColorMaps(self):
+
+        self.additionalGradients = OrderedDict()
+        list_of_maps = pyqtgraph.colormap.listMaps('matplotlib')
+        list_of_maps = sorted(list_of_maps, key = lambda x: x.lower())
+
+        for map_name in list_of_maps:
+            cm = pyqtgraph.colormap.get(map_name, source = 'matplotlib', skipCache = True)
+
+            entry = {
+                'ticks': [],
+                'mode':  'rgb'
+            }
+
+            stops = cm.getStops()
+
+            for i in range(len(stops)):
+                entry['ticks'].append((stops[0][i], tuple(stops[1][i])))
+
+            self.additionalGradients.update({map_name.lower(): entry})
+
+        self.ui.histogram.gradient.menu.removeAction(self.ui.histogram.gradient.rgbAction)
+        self.ui.histogram.gradient.menu.removeAction(self.ui.histogram.gradient.hsvAction)
+
+        for g in self.additionalGradients:
+            act = self.__createBoxForColorAction(g)
+            self.ui.histogram.gradient.menu.addAction(act)
+
+        self.ui.histogram.gradient.menu.addAction(self.ui.histogram.gradient.rgbAction)
+        self.ui.histogram.gradient.menu.addAction(self.ui.histogram.gradient.hsvAction)
+        self.ui.histogram.gradient.menu.addSeparator()
+        self.ui.histogram.gradient.restoreState(Gradients['grey'])
+
+    def __createBoxForColorAction(self, grName) -> QtWidgets.QWidgetAction:
+        px = QtGui.QPixmap(100, 15)
+        p = QtGui.QPainter(px)
+        self.ui.histogram.gradient.restoreState(self.additionalGradients[grName])
+        grad = self.ui.histogram.gradient.getGradient()
+        brush = QtGui.QBrush(grad)
+        p.fillRect(QtCore.QRect(0, 0, 100, 15), brush)
+        p.end()
+        label = QtWidgets.QLabel()
+        label.setPixmap(px)
+        label.setContentsMargins(1, 1, 1, 1)
+        labelName = QtWidgets.QLabel(grName)
+        hbox = QtWidgets.QHBoxLayout()
+        hbox.addWidget(labelName)
+        hbox.addWidget(label)
+        widget = QtWidgets.QWidget()
+        widget.setLayout(hbox)
+        act = QtWidgets.QWidgetAction(self.ui.histogram.gradient)
+        act.setDefaultWidget(widget)
+        act.triggered.connect(self.ui.histogram.gradient.contextMenuClicked)
+        act.name = grName
+
+        return act

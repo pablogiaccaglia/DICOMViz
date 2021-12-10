@@ -26,7 +26,7 @@ class DicomFile(DicomAbstractContainerClass):
             self.originalImgNpArray = numpy.array([originalImg], numpy.int16)
 
         if dicomMasks is None:
-            try: # TODO HANDLE THIS FOR RGB
+            try:# TODO HANDLE THIS FOR RGB
                 self.dicomMasks = utils.getDicomMasks(self.originalImgNpArray, -70)
             except:
                 self.dicomMasks = None

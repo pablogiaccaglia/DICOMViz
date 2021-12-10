@@ -1,6 +1,7 @@
 from enum import Enum
 
 import numpy
+import pyqtgraph
 from PyQt6.QtGui import QPixmap
 from pyqtgraph import ImageItem
 
@@ -36,11 +37,13 @@ class DICOMGraphicsView(CustomImageView):
         self.__toggleButtons(value = False)
         self.toggleGifSlider(value = False)
         self.isNegative = False
+        self.previousMode = None
 
         from pyqtgraph.GraphicsScene.exportDialog import ExportDialog
         self.scene.exportDialog = ExportDialog(self.scene)
 
         self.currentBgColor = "black"
+        self.bgColorBeforeNegative = None
 
     def _setImageToView(self, img, mode: ViewMode, isFirstImage: bool):
 
@@ -64,25 +67,45 @@ class DICOMGraphicsView(CustomImageView):
         else:
             self.ui.sliderButton.setDisabled(False)
 
-        if not (self.isNegative and mode is ViewMode.NEGATIVE):
-            self.currentBgColor = ViewModeBgColor[ViewMode(mode).name].value
+        print(str(self.isNegative))
 
+        print(self.previousMode)
+
+        if self.isNegative:
+            self.currentBgColor = ViewModeBgColor[ViewMode(mode).name].value
+        else:
+            if mode != ViewMode.NEGATIVE:
+                self.previousMode = mode
+            self.currentBgColor = self.bgColorBeforeNegative \
+                if self.bgColorBeforeNegative is not None else ViewModeBgColor[ViewMode(self.previousMode).name].value
+
+        print(str(self.currentBgColor))
         self.view.setBackgroundColor(self.currentBgColor)
         self.view.setMenuEnabled(True)
         self.setImage(img.T, autoRange = self.autoRangeOption, autoHistogramRange = self.autoHistogramRangeOption,
                       autoLevels = self.autoLevelsOption, levelMode = 'mono')
 
+        if mode == ViewMode.NEGATIVE and self.previousMode != ViewMode.NEGATIVE:
+            self.toggleOnceAutoLevels()
+
         if isFirstImage:
-            self.autoLevels()
-            self.optImageLevels = self._imageLevels
-            self.autoLevelsOption = False
+            print("ciao")
+            self.toggleOnceAutoLevels()
             self.window.dicomHandler.enableNegativeImageAction()
+            self.previousMode = mode
+
+    def toggleOnceAutoLevels(self):
+        self.autoLevels()
+        self.optImageLevels = self._imageLevels
+        self.autoLevelsOption = False
 
     def setImageToView(self, DicomContainer: 'DicomAbstractContainerClass', viewMode: ViewMode, isFirstImage: bool):
         try:
 
+            print(str(viewMode))
+
             if viewMode is not None and viewMode is not ViewMode.NEGATIVE:
-                    self.currentViewMode = viewMode
+                self.currentViewMode = viewMode
 
             self.window.setWindowTitle("DICOM Visualizer : " + DicomContainer.filename)
 
