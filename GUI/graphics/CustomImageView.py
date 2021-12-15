@@ -1,12 +1,11 @@
 from collections import namedtuple, OrderedDict
 from enum import Enum
-from functools import partial
 
+import fuckit
 import numpy
-import pyqtgraph
 from PyQt6.QtWidgets import QApplication
 from pyqtgraph.graphicsItems.GradientEditorItem import Gradients
-
+import pyqtgraph
 from GUI.graphics.ColorDialog import ColorAction
 from GUI.graphics.CustomViewBox import CustomViewBox
 from PyQt6 import QtWidgets, QtCore, QtGui
@@ -15,14 +14,12 @@ from PyQt6.QtCore import Qt
 transformationTuple = namedtuple("transformationTuple", ["function", "partial_params"])
 translate = QtCore.QCoreApplication.translate
 
-
 class TRANSFORMATION(Enum):
     ROTATE_90_CCW = transformationTuple(function = numpy.rot90, partial_params = (1, (1, 0)))
     ROTATE_90_CW = transformationTuple(function = numpy.rot90, partial_params = (1, (0, 1)))
     ROTATE_180 = transformationTuple(function = numpy.rot90, partial_params = (2, (1, 0)))
     FLIP_HORIZONTAL = transformationTuple(function = numpy.fliplr, partial_params = None)
     FLIP_VERTICAL = transformationTuple(function = numpy.flipud, partial_params = None)
-
 
 class CustomImageView(pyqtgraph.ImageView):
     """
@@ -248,7 +245,6 @@ class CustomImageView(pyqtgraph.ImageView):
     def __addChangeBackgroundColorActionToImageViewMenu(self):
         self.changeBgColorAction = ColorAction(translate("ImageView", "Change Background Color"), self.menu)
         self.menu.addAction(self.changeBgColorAction)
-
         self.changeBgColorAction.colorChangedSignal.connect(self.setBackgroundColorOnSignal)
 
     def setBackgroundColorOnSignal(self):
@@ -281,6 +277,7 @@ class CustomImageView(pyqtgraph.ImageView):
                 entry['ticks'].append((stops[0][i], tuple(stops[1][i])))
 
             self.additionalGradients.update({map_name.lower(): entry})
+            Gradients.update({map_name.lower(): entry})
 
         self.ui.histogram.gradient.menu.removeAction(self.ui.histogram.gradient.rgbAction)
         self.ui.histogram.gradient.menu.removeAction(self.ui.histogram.gradient.hsvAction)

@@ -1,6 +1,4 @@
 from PyQt6 import QtWidgets, QtCore
-from PyQt6.QtGui import QClipboard
-from PyQt6.QtWidgets import QApplication
 
 from GUI.menus.AbstractMenu import AbstractMenu
 

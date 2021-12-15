@@ -1,12 +1,11 @@
 from enum import Enum
 
 import numpy
-import pyqtgraph
-from PyQt6.QtGui import QPixmap
-from pyqtgraph import ImageItem
+import fuckit
 
 from DICOM.DicomAbstractContainer import ViewMode, DicomAbstractContainerClass
 from GUI.graphics.CustomImageView import CustomImageView, TRANSFORMATION
+from pyqtgraph.GraphicsScene.exportDialog import ExportDialog
 
 # VIEW MODES
 from GUI.graphics.GIFHandler import GIFHandler
@@ -22,9 +21,9 @@ class ViewModeBgColor(Enum):
 
 class DICOMGraphicsView(CustomImageView):
 
-    def __init__(self, window):
+    def __init__(self, window, fatherWidget):
 
-        super().__init__(window)
+        super().__init__(fatherWidget)
         self.window = window
         self.scene.contextMenuItem = self.view
         self.view.setMenuEnabled(False)
@@ -38,8 +37,8 @@ class DICOMGraphicsView(CustomImageView):
         self.toggleGifSlider(value = False)
         self.isNegative = False
         self.previousMode = None
+        self.isAnimationOn = False
 
-        from pyqtgraph.GraphicsScene.exportDialog import ExportDialog
         self.scene.exportDialog = ExportDialog(self.scene)
 
         self.currentBgColor = "black"
@@ -67,10 +66,6 @@ class DICOMGraphicsView(CustomImageView):
         else:
             self.ui.sliderButton.setDisabled(False)
 
-        print(str(self.isNegative))
-
-        print(self.previousMode)
-
         if self.isNegative:
             self.currentBgColor = ViewModeBgColor[ViewMode(mode).name].value
         else:
@@ -79,8 +74,10 @@ class DICOMGraphicsView(CustomImageView):
             self.currentBgColor = self.bgColorBeforeNegative \
                 if self.bgColorBeforeNegative is not None else ViewModeBgColor[ViewMode(self.previousMode).name].value
 
-        print(str(self.currentBgColor))
-        self.view.setBackgroundColor(self.currentBgColor)
+        if not self.isAnimationOn and not self.currentBgColor == 'white':
+            self.view.setBackgroundColor(self.currentBgColor)
+            self.autoHistogramRangeOption = False
+
         self.view.setMenuEnabled(True)
         self.setImage(img.T, autoRange = self.autoRangeOption, autoHistogramRange = self.autoHistogramRangeOption,
                       autoLevels = self.autoLevelsOption, levelMode = 'mono')
@@ -89,7 +86,6 @@ class DICOMGraphicsView(CustomImageView):
             self.toggleOnceAutoLevels()
 
         if isFirstImage:
-            print("ciao")
             self.toggleOnceAutoLevels()
             self.window.dicomHandler.enableNegativeImageAction()
             self.previousMode = mode
@@ -101,8 +97,6 @@ class DICOMGraphicsView(CustomImageView):
 
     def setImageToView(self, DicomContainer: 'DicomAbstractContainerClass', viewMode: ViewMode, isFirstImage: bool):
         try:
-
-            print(str(viewMode))
 
             if viewMode is not None and viewMode is not ViewMode.NEGATIVE:
                 self.currentViewMode = viewMode
@@ -126,8 +120,7 @@ class DICOMGraphicsView(CustomImageView):
             if DicomContainer is not None:
                 self.window.dicomHandler.currentShownDicomFileObject = DicomContainer
 
-        except Exception as e:
-            print(str(e))
+        except Exception:
             self._setImageToView(None, ViewMode.ORIGINAL, False)
             self.window.setWindowTitle("DICOM Visualizer: No image")
 
@@ -197,5 +190,6 @@ class DICOMGraphicsView(CustomImageView):
         try:
             self.scene.exportDialog.ui.formatList.clear()
             self.scene.exportDialog.updateFormatList()
-        except:
+        except BaseException:
+            print("ciao")
             pass

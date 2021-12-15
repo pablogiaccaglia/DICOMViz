@@ -1,4 +1,4 @@
-from PyQt6 import QtGui, QtWidgets
+from PyQt6 import QtGui, QtWidgets, QtCore
 from PyQt6.QtCore import Qt, pyqtSignal
 
 
@@ -13,6 +13,9 @@ class ColorAction(QtGui.QAction):
         self._default = color
         self.triggered.connect(self.onColorPicker)
         self.fatherWidget = fatherWidget
+        self.dialog = QtWidgets.QColorDialog(self.fatherWidget)
+
+        self.dialog.currentColorChanged.connect(self.currentColorC)
 
         # Set the initial/default state.
         self.setColor(self._default)
@@ -28,15 +31,20 @@ class ColorAction(QtGui.QAction):
 
     def onColorPicker(self):
 
-        dlg = QtWidgets.QColorDialog(self.fatherWidget)
         if self._color:
-            dlg.setCurrentColor(QtGui.QColor(self._color))
+            self.dialog.setCurrentColor(QtGui.QColor(self._color))
 
-        if dlg.exec():
-            self.setColor(dlg.currentColor().name())
+        if self.dialog.show():
+            self.setColor(self.dialog.currentColor().name())
 
     def mousePressEvent(self, e):
         if e.button() == Qt.MouseButton.RightButton:
             self.setColor(self._default)
 
         return super(ColorAction, self).mousePressEvent(e)
+
+    def currentColorC(self):
+        self.colorChangedSignal.emit(self._color)
+        self.setColor(self.dialog.currentColor().name())
+
+

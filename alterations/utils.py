@@ -1,6 +1,5 @@
 import copy
 from collections import namedtuple
-from typing import List
 
 from alterations.CTLungsAlterations import segment_lung_mask
 

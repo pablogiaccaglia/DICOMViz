@@ -7,12 +7,6 @@ class TagsGroupBox(QtWidgets.QGroupBox):
 
         super().__init__(centralWidget)
 
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Expanding)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.sizePolicy().hasHeightForWidth())
-        self.setSizePolicy(sizePolicy)
-
         self.setAutoFillBackground(True)
         self.setObjectName("TagGroupBox")
 
@@ -35,7 +29,7 @@ class TagsGroupBox(QtWidgets.QGroupBox):
 
     def __initHorizontalLayout(self):
         self.horizontalLayout.setContentsMargins(-1, 0, -1, -1)
-        self.horizontalLayout.setObjectName("horizontalLayout_3")
+        self.horizontalLayout.setObjectName("horizontalLayout")
         self.horizontalLayout.addWidget(self.label)
         self.horizontalLayout.addWidget(self.filterLine)
 

@@ -1,16 +1,18 @@
 import os
 import threading
 import zipfile
+from collections import OrderedDict
+from itertools import chain
 from typing import List
 
 from PyQt6.QtCore import QObject, pyqtSignal
 from pyqtgraph.exporters import Exporter
 
 from DICOM.DicomAbstractContainer import ViewMode, DicomAbstractContainerClass
-from DICOM.dicom import loadDicomDir, loadDicomZip, loadDicomFile
+from DICOM.dicom import loadDicomDir, loadDicomZip, loadDicomFile, seriesListColumns
 from multiprocessing import Queue
-from queue import Empty
 
+from GUI import utils
 from GUI.docks.Dock import Dock
 from GUI.docks.DockFiles import DockFiles
 from GUI.docks.DockSeries import DockSeries
@@ -32,6 +34,7 @@ class Handler(QObject):
         self.currentViewMode = ViewMode.ORIGINAL
         self.window = window
         self.srcList = []  # list of tuples -> (src directory, DicomSeries object)
+        self.seriesMap = OrderedDict()  # key -> series tags, value -> DicomSeries object
         self.currentSeries = []  # list of series of the currently selected
         self.srcDicomFileObjectsDict = {}  # dict of DicomFile objects -> filePath : DicomFile object
         self.srcQueue = Queue()  # queue of directories to load
@@ -50,6 +53,7 @@ class Handler(QObject):
     def connectSignals(self):
         self.loadSeriesIsComplete.connect(self.__handleDockSeriesLoad)
         self.loadFilesIsComplete.connect(self.__handleDockFilesLoad)
+        self.loadSeriesIsComplete.connect(self.__addToSeriesTable)
 
     # self.statusSignal.connect(self.setStatus)
 
@@ -136,8 +140,12 @@ class Handler(QObject):
                 self.currentSeries = series[0].sortedFileNamesList
                 self.loadSeriesIsComplete.emit()
 
-            except Empty:
+            except Exception:
                 pass
+
+    def _addSeriesToTable(self):
+
+        self.window.seriesMap.clear()
 
     @property
     def currSelectedSeriesIndex(self):
@@ -244,6 +252,19 @@ class Handler(QObject):
     def enableNegativeImageAction(self):
         self.window.menuBar.menuAlterations.enableNegativeImageAction()
 
+    def __addToSeriesTable(self):
 
+        lenght = len(self.srcList)
 
+        newDictPart = OrderedDict()
+
+        if lenght > 0:
+            entry = self.srcList[lenght - 1]
+            for s in entry[1]:
+                tags = s.getTagValues(seriesListColumns)
+                newDictPart[tags] = s
+
+            self.window.seriesSelectionModel.updateTable(seriesEntries = newDictPart.keys())
+            self.window.seriesSelectionModel.layoutChanged.emit()
+            self.seriesMap = OrderedDict(chain(self.seriesMap.items(), newDictPart.items()))
 
