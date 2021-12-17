@@ -23,7 +23,7 @@ class DicomAbstractContainerClass(ABC):
         pass
 
     @abstractmethod
-    def getTagObject(self, index):
+    def getDicomFile(self, index):
         pass
 
     @abstractmethod

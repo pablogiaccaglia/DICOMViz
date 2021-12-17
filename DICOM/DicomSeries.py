@@ -4,7 +4,7 @@ from pydicom import dicomio
 
 from DICOM import DicomAbstractContainer
 from DICOM.DicomAbstractContainer import ViewMode
-from DICOM.DicomFile import DicomFile
+from DICOM.DicomFileWrapper import DicomFileWrapper
 
 
 class DicomSeries(DicomAbstractContainer.DicomAbstractContainerClass):
@@ -42,14 +42,6 @@ class DicomSeries(DicomAbstractContainer.DicomAbstractContainerClass):
         self.filenames.append(filename)
         self.loadTags.append(loadTag)
 
-    def getTagObject(self, index):
-        """Get the object storing tag information from Dicom file at the given index."""
-        if index not in self.tagCache:
-            dcm = dicomio.read_file(self.filenames[index], stop_before_pixels = True)
-            self.tagCache[index] = dcm
-
-        return self.tagCache[index]
-
     def getExtraTagValues(self):
         """Return the extra tag values calculated from the series tag info stored in self.filenames."""
         start, interval, numTimes = self.getTimestepSpec()
@@ -69,7 +61,12 @@ class DicomSeries(DicomAbstractContainer.DicomAbstractContainerClass):
         if not self.filenames:
             return ()
 
-        dcm = self.getTagObject(index)
+        if self.pixelsDataTuple is None:
+            dcm = self.getDicomRawImage(index = index).getDicomFile()
+
+        else:
+            dcm = self.getDicomFile(index)
+
         extraVals = self.getExtraTagValues()
 
         # TODO: kludge? More general solution of telling series apart
@@ -80,7 +77,7 @@ class DicomSeries(DicomAbstractContainer.DicomAbstractContainerClass):
     def getPixelData(self, index, mode: ViewMode = ViewMode.ORIGINAL):
         """Get the pixel data array for file at position `index` in self.filenames, or None if no pixel data."""
 
-        return self.getDicomFileAt(index).getPixelData(mode)
+        return self.getDicomFile(index).getPixelData(mode)
 
     def computeDicomFile(self, index):
 
@@ -88,8 +85,8 @@ class DicomSeries(DicomAbstractContainer.DicomAbstractContainerClass):
         currentSlice.SliceThickness = self.slice_thickness
         originalImg = self.pixelsDataTuple[index]
 
-        dcmFile = DicomFile(fileName = self.sortedFileNamesList[index], dicomData = currentSlice,
-                            originalImg = originalImg)
+        dcmFile = DicomFileWrapper(fileName = self.sortedFileNamesList[index], dicomData = currentSlice,
+                                   originalImg = originalImg)
         self.dicomFilesList[index] = dcmFile
         self.dicomFilesIndexesDict[index] = dcmFile
 
@@ -107,7 +104,7 @@ class DicomSeries(DicomAbstractContainer.DicomAbstractContainerClass):
 
         return pixelData
 
-    def getDicomFileAt(self, index):
+    def getDicomFile(self, index):
 
         if index not in self.dicomFileIndexesCache:
             self.computeDicomFile(index = index)
@@ -115,11 +112,11 @@ class DicomSeries(DicomAbstractContainer.DicomAbstractContainerClass):
 
         return self.dicomFilesList[index]
 
-    def getFirstDicomRawImage(self):
+    def getDicomRawImage(self, index: int):
         if self.pixelsDataTuple is None:
-            return DicomFile(fileName = self.sortedFileNamesList[0])
+            return DicomFileWrapper(fileName = self.sortedFileNamesList[index])
         else:
-            return self.getDicomFileAt(index = 0)
+            return self.getDicomFile(index = 0)
 
     def getPixelDataFromPath(self, path, mode: ViewMode = ViewMode.ORIGINAL):
         try:

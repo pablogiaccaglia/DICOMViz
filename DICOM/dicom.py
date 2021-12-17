@@ -10,7 +10,7 @@ import numpy as np
 from pydicom import dicomio, datadict, errors
 
 # tag names of default columns in the series list, this can be changed to pull out different tag names for columns
-from DICOM.DicomFile import DicomFile
+from DICOM.DicomFileWrapper import DicomFileWrapper
 from DICOM.DicomSeries import DicomSeries
 
 seriesListColumns = (
@@ -62,7 +62,7 @@ def loadDicomFiles(filenames, queue):
 
 def loadDicomFile(filename):
     try:
-        dicomFile = DicomFile(filename)
+        dicomFile = DicomFileWrapper(filename)
         return dicomFile
     except errors.InvalidDicomError:
         pass

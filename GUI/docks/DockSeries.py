@@ -22,7 +22,7 @@ class DockSeries(Dock):
             self.currentSelectedSeriesIndex = self.window.dicomHandler.currSelectedSeriesIndex
             self.currentSeriesObject = self.window.dicomHandler.currentSeriesObject
             self.window.dicomHandler.currentDicomObject = self.currentSeriesObject
-            self.window.dicomHandler.setImageToView(self.currentSeriesObject.getFirstDicomRawImage(),
+            self.window.dicomHandler.setImageToView(self.currentSeriesObject.getDicomRawImage(index = 0),
                                                     viewMode = ViewMode.ORIGINAL, isFirstImage = True)
             self.currentSeriesObject.computeSliceThickness()
             self.currentSeriesObject.loadPixelDataTuple()
@@ -47,7 +47,7 @@ class DockSeries(Dock):
                 item = self.getCurrentSelectedItem()
                 filename = str(item.toolTip())
                 self.currentPosition = self.currentSeriesObject.getIndexFromPath(filename)
-                self.window.dicomHandler.setImageToView(self.currentSeriesObject.getDicomFileAt(self.currentPosition),
+                self.window.dicomHandler.setImageToView(self.currentSeriesObject.getDicomFile(self.currentPosition),
                                                         self.window.dicomHandler.currentViewMode, isFirstImage = False)
         except:
             pass

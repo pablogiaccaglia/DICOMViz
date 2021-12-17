@@ -7,7 +7,7 @@ import numpy
 from alterations import utils
 
 
-class DicomFile(DicomAbstractContainerClass):
+class DicomFileWrapper(DicomAbstractContainerClass):
 
     def __init__(self, fileName, dicomData = None, dicomMasks = None, originalImg = None, segmentedLungsImg = None):
         super().__init__()
@@ -57,10 +57,9 @@ class DicomFile(DicomAbstractContainerClass):
         self.loadTag = loadTag
         pass
 
-    def getTagObject(self, index = None):
+    def getDicomFile(self, index = None):
         """Get the object storing tag information from Dicom file."""
-        dcm = pydicom.dcmread(self.filename, stop_before_pixels = True)
-        return dcm
+        return self.dicomData
 
     def getExtraTagValues(self):
         """Return the extra tag values calculated from the series tag info stored in self.filenames."""
@@ -82,7 +81,7 @@ class DicomFile(DicomAbstractContainerClass):
         if not self.filename:
             return ()
 
-        dcm = self.getTagObject(index)
+        dcm = self.getDicomFile(index)
         extraVals = self.getExtraTagValues()
 
         # TODO: kludge? More general solution of telling series apart

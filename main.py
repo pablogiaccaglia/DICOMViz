@@ -41,7 +41,7 @@ if __name__ == "__main__":
     app.setAttribute(Qt.ApplicationAttribute.AA_Use96Dpi)
 
     # set icon
-    icon = QtGui.QIcon('DICOMViz-logos.jpeg')
+    icon = QtGui.QIcon('rounded-logo.png')
     app.setWindowIcon(icon)
 
     # MainWindow = QtWidgets.QMainWindow()

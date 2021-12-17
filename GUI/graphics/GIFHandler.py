@@ -45,7 +45,7 @@ class GIFHandler(QWidget):
 
         self.dockSeries.setSelectedItem(self.currentImageIndex)
 
-        self.graphicsView.setImageToView(DicomContainer = self.currentSeries.getDicomFileAt(self.currentImageIndex),
+        self.graphicsView.setImageToView(DicomContainer = self.currentSeries.getDicomFile(self.currentImageIndex),
                                          viewMode = self.handler.currentViewMode,
                                          isFirstImage = False)
 

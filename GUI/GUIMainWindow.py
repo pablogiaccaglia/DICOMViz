@@ -7,6 +7,7 @@ from PyQt6.QtWidgets import QMainWindow, QGraphicsScene, QMenu
 import DICOM
 from DICOM.DicomAbstractContainer import ViewMode
 from GUI.containers.SeriesSelection import SeriesSelection
+from GUI.containers.TagsContainer import TagsContainer
 from GUI.docks.DockFiles import DockFiles
 from GUI.docks.DockSeries import DockSeries
 from GUI.menus.MenuBar import MenuBar
@@ -56,7 +57,9 @@ class GUIMainWindow(QMainWindow):
         self.gridLayoutGraphicsBox = QtWidgets.QGridLayout(self.graphicsBox)
         self.graphicsView = DICOMGraphicsView(self, self.graphicsBox)
         self.gridLayoutGraphicsBox.addWidget(self.graphicsView, 0, 0, 1, 1)
-        self.tagsGroupBox = TagsGroupBox(self.imageViewAndTagsSplitter)
+
+        self.tagsContainer = TagsContainer(self)
+        self.tagsGroupBox = TagsGroupBox(self.imageViewAndTagsSplitter, tagsContainer = self.tagsContainer)
 
         self.imageViewAndTagshorizontalLayout.addWidget(self.imageViewAndTagsSplitter)
         self.gridLayoutSeriesAndView.addWidget(self.seriesSelectionSplitter, 0, 0, 1, 1)

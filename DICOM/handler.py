@@ -30,7 +30,7 @@ class Handler(QObject):
     def __init__(self, window):
         # create the directory queue and loading thread objects
         super().__init__()
-        self._currentSelectedSeriesIndex = 0
+        self._currentSelectedSeriesIndex = -1
         self.currentViewMode = ViewMode.ORIGINAL
         self.window = window
         self.srcList = []  # list of tuples -> (src directory, DicomSeries object)
@@ -76,6 +76,7 @@ class Handler(QObject):
             self.isFirstLoad = False
             self.toggleMenuOptions(True)
 
+        self.window.tagsGroupBox.fillTagsTree(dicomFile = DicomContainer)
         self.window.graphicsView.setImageToView(DicomContainer, viewMode, isFirstImage)
 
     def prepareGifExporter(self):
@@ -89,7 +90,7 @@ class Handler(QObject):
         self.removeImageFromView()
         self.__removeSeriesFilesFromDock()
 
-    def __removeDicomSeriesObjectFromSrcList(self, dicomSeriesObject : DicomSeries):
+    def __removeDicomSeriesObjectFromSrcList(self, dicomSeriesObject: DicomSeries):
 
         for entry in self.srcList:
             if entry[1] == dicomSeriesObject:
@@ -258,6 +259,7 @@ class Handler(QObject):
                 self.window.seriesFilesDock.deselectItem()
                 self.window.menuBar.menuCine.toggleActions(False)
                 self.window.menuBar.menuFiles.toggleActionRemoveSeries(False)
+
         except Exception as e:
             print(str(e))
             pass
@@ -311,5 +313,7 @@ class Handler(QObject):
         self.__handleDockSeriesLoad()
 
         if self.window.graphicsView.gifHandler:
-           # self.window.graphicsView.stopGifHandler()
+            # self.window.graphicsView.stopGifHandler()
             self.window.graphicsView.addGifHandler()
+
+        #self.window.tagsGroupBox.fillTagsTree(dicomFile = self.currentSeriesObject)

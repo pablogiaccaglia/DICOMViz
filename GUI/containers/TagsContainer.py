@@ -3,19 +3,19 @@ import re
 from PyQt6 import QtGui
 
 
-class TagContainer(QtGui.QStandardItemModel):
+class TagsContainer(QtGui.QStandardItemModel):
+
+    def __init__(self, parent):
+        QtGui.QStandardItemModel.__init__(self, parent= parent)
 
     """Container to manage Dicom file's tags in a list"""
 
-    def __fillTags(self, dicomFile, columns, regex = None, maxValueSize = 256):
-        self.clear()
-        self.setHorizontalHeaderLabels(columns)
-        self.fillTags(self, dicomFile, columns, regex, maxValueSize)  # actual code in a separate function to be usable elsewhere
-
-    @classmethod
-    def fillTags(cls, model, dicomFile, columns, regex = None, maxValueSize = 256):
+    def fillTags(self, dicomFile, columns, regex = None, maxValueSize = 256):
 
         """Fill the TagContainer with the tags of the dicomFile"""
+
+        self.clear()
+        self.setHorizontalHeaderLabels(columns)
 
         try:
             regex = re.compile(str(regex), re.DOTALL)
@@ -83,5 +83,5 @@ class TagContainer(QtGui.QStandardItemModel):
 
         tagParentNode = QtGui.QStandardItem(
                 "Tags")  # create a parent node every tag is a child of, used for copying all tag data
-        model.appendRow([tagParentNode])
+        self.appendRow([tagParentNode])
         _buildContent(tagParentNode, dicomFile)
