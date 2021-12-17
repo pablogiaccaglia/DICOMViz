@@ -9,10 +9,10 @@ from PyQt6.QtCore import QObject, pyqtSignal
 from pyqtgraph.exporters import Exporter
 
 from DICOM.DicomAbstractContainer import ViewMode, DicomAbstractContainerClass
+from DICOM.DicomSeries import DicomSeries
 from DICOM.dicom import loadDicomDir, loadDicomZip, loadDicomFile, seriesListColumns
-from multiprocessing import Queue
+from queue import Queue, Empty
 
-from GUI import utils
 from GUI.docks.Dock import Dock
 from GUI.docks.DockFiles import DockFiles
 from GUI.docks.DockSeries import DockSeries
@@ -49,11 +49,14 @@ class Handler(QObject):
         self.currentShownDicomFileObject = None
         self.isFirstLoad = True
         self.menus = None
+        self.newSeriesAddedAmount = 0
+        self.currentSeriesObject = None
+        self.currentDicomObject = None
 
     def connectSignals(self):
-        self.loadSeriesIsComplete.connect(self.__handleDockSeriesLoad)
-        self.loadFilesIsComplete.connect(self.__handleDockFilesLoad)
         self.loadSeriesIsComplete.connect(self.__addToSeriesTable)
+        self.loadFilesIsComplete.connect(self.__handleDockFilesLoad)
+        self.window.seriesSelectionWidget.clicked.connect(self.seriesClicked)
 
     # self.statusSignal.connect(self.setStatus)
 
@@ -63,8 +66,8 @@ class Handler(QObject):
         self.toggleFilesMenuOptions(True)
 
     def __handleDockSeriesLoad(self):
-        self.window.singleFilesDock.unselectCurrentSelected()
         self.window.seriesFilesDock.loadFiles(self.currentSeries)
+        self.window.singleFilesDock.unselectCurrentSelected()
         self.toggleFilesMenuOptions(True)
 
     def setImageToView(self, DicomContainer: 'DicomAbstractContainerClass', viewMode: ViewMode, isFirstImage: bool):
@@ -76,8 +79,24 @@ class Handler(QObject):
         self.window.graphicsView.setImageToView(DicomContainer, viewMode, isFirstImage)
 
     def prepareGifExporter(self):
-        data = (self.srcList[self._currentSelectedSeriesIndex][1][0]).getPixelDataList(mode = self.currentViewMode)
+        data = (self.srcList[self._currentSelectedSeriesIndex][1]).getPixelDataList(mode = self.currentViewMode)
         GIFHandler.prepareGIFExport(data)
+
+    def removeSeries(self):
+        removedRowTuple = self.window.seriesSelectionModel.removeRow(self.currSelectedSeriesIndex)
+        removedDicomSeriesObject = self.seriesMap.pop(removedRowTuple)
+        self.__removeDicomSeriesObjectFromSrcList(dicomSeriesObject = removedDicomSeriesObject)
+        self.removeImageFromView()
+        self.__removeSeriesFilesFromDock()
+
+    def __removeDicomSeriesObjectFromSrcList(self, dicomSeriesObject : DicomSeries):
+
+        for entry in self.srcList:
+            if entry[1] == dicomSeriesObject:
+                del entry
+
+    def __removeSeriesFilesFromDock(self):
+        self.window.seriesFilesDock.removeSeriesFiles()
 
     def removeImageFromView(self):
         self.window.graphicsView.removeImageFromView()
@@ -117,35 +136,35 @@ class Handler(QObject):
         while True:
             try:
                 src = self.srcQueue.get(True, 0.5)
-                self.toggleFilesMenuOptions(False)
+                # self.toggleFilesMenuOptions(False)
                 if os.path.isdir(src):
                     loader = loadDicomDir
-                    self._currentSelectedSeriesIndex = 0
 
                 elif zipfile.is_zipfile(src):
                     loader = loadDicomZip
-                    self._currentSelectedSeriesIndex = 0
                 else:
                     dicomFile = loadDicomFile(src)
                     self.srcDicomFileObjectsDict[src] = dicomFile
-                    self._currentSelectedSeriesIndex = None
                     self.lastLoadFileDir = src
                     self.fileIsLoadedFunction = [self.srcDicomFileObjectsDict[self.lastLoadFileDir]]
                     self.loadFilesIsComplete.emit()
                     continue
 
-                #  series = loader(src, self.statusSignal.emit)
-                series = loader(src)
-                self.srcList.append((src, series))
-                self.currentSeries = series[0].sortedFileNamesList
+                seriesInDir = loader(src)
+
+                prevLen = len(self.srcList)
+
+                for series in seriesInDir:
+                    self.srcList.append((src, series))
+
+                self.newSeriesAddedAmount = len(self.srcList) - prevLen
+
+                self.currentSeries = seriesInDir[0].sortedFileNamesList
+                self.currentSelectedSeriesIndex = prevLen
                 self.loadSeriesIsComplete.emit()
 
-            except Exception:
+            except Empty:
                 pass
-
-    def _addSeriesToTable(self):
-
-        self.window.seriesMap.clear()
 
     @property
     def currSelectedSeriesIndex(self):
@@ -187,7 +206,7 @@ class Handler(QObject):
 
     def toggleMenuOptions(self, value: bool):
         for menu in self.menus:
-            menu.toggleActions(value)
+            menu.toggleActions(value = value, dicomContainer = self.currentDicomObject)
 
     def toggleFilesMenuOptions(self, value: bool):
         self.window.menuBar.menuFiles.toggleFilesActions(value)
@@ -224,20 +243,26 @@ class Handler(QObject):
 
         try:
             if isinstance(dock, DockSeries):
-                self.__toggleGifSlider(True)
+
+                if self.window.graphicsView.isAnimationOn():
+                    self.toggleGifSlider(True)
+                else:
+                    self.toggleGifSlider(False)
                 self.window.singleFilesDock.deselectItem()
                 self.window.graphicsView.updateExportDialog()
+                self.window.menuBar.menuFiles.toggleActionRemoveSeries(True)
 
             elif isinstance(dock, DockFiles):
                 self.window.graphicsView.updateExportDialog()
-                self.__toggleGifSlider(False)
+                self.toggleGifSlider(False)
                 self.window.seriesFilesDock.deselectItem()
                 self.window.menuBar.menuCine.toggleActions(False)
+                self.window.menuBar.menuFiles.toggleActionRemoveSeries(False)
         except Exception as e:
             print(str(e))
             pass
 
-    def __toggleGifSlider(self, value: bool):
+    def toggleGifSlider(self, value: bool):
         self.window.graphicsView.toggleGifSlider(value)
 
     def updateGifSpeedOnDialog(self, value):
@@ -259,12 +284,32 @@ class Handler(QObject):
         newDictPart = OrderedDict()
 
         if lenght > 0:
-            entry = self.srcList[lenght - 1]
-            for s in entry[1]:
-                tags = s.getTagValues(seriesListColumns)
-                newDictPart[tags] = s
+            for entry in self.srcList[lenght - self.newSeriesAddedAmount: lenght]:
+                tags = entry[1].getTagValues(seriesListColumns)
+                newDictPart[tags] = entry[1]
 
             self.window.seriesSelectionModel.updateTable(seriesEntries = newDictPart.keys())
             self.window.seriesSelectionModel.layoutChanged.emit()
             self.seriesMap = OrderedDict(chain(self.seriesMap.items(), newDictPart.items()))
 
+        self.window.seriesSelectionWidget.clickRow(index = 0)
+
+    def seriesClicked(self, item):
+        """Called when a series is clicked on, set the viewed image to be from the clicked series."""
+
+        if item.row() == self._currentSelectedSeriesIndex:
+            return
+
+        self._currentSelectedSeriesIndex = item.row()
+        selectionModel = self.window.seriesSelectionModel
+        selectionModel.currentSelectedRowIndex = self._currentSelectedSeriesIndex
+        self.currentSeriesObject = self.seriesMap[
+            selectionModel.getRowContent(index = self._currentSelectedSeriesIndex)]
+        self.currentDicomObject = self.currentSeriesObject
+
+        self.currentSeries = self.currentSeriesObject.sortedFileNamesList
+        self.__handleDockSeriesLoad()
+
+        if self.window.graphicsView.gifHandler:
+           # self.window.graphicsView.stopGifHandler()
+            self.window.graphicsView.addGifHandler()

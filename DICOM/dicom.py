@@ -1,4 +1,5 @@
 import os
+import time
 import zipfile
 from contextlib import closing
 from io import BytesIO
@@ -76,6 +77,7 @@ def loadDicomDir(rootdir, statusfunc = lambda s, c, n: None, numprocs = None):
     objects, and the total number to load. A status string of '' indicates loading is done. The default value causes
     no status indication to be made. Return value is a sequence of DicomSeries objects in no particular order.
     """
+
     allfiles = []
     for root, _, files in os.walk(rootdir):
         allfiles += [os.path.join(root, f) for f in files if f.lower() != "dicomdir"]
@@ -86,12 +88,13 @@ def loadDicomDir(rootdir, statusfunc = lambda s, c, n: None, numprocs = None):
     numfiles = len(allfiles)
     res = []
     series = {}
-    count = 0
+    # count = 0
 
     if not numfiles:
         return []
 
     with closing(Pool(processes = numprocs)) as pool:
+
         for filesec in np.array_split(allfiles, numprocs):
             res.append(pool.apply_async(loadDicomFiles, (filesec, queue)))
 
@@ -100,21 +103,19 @@ def loadDicomDir(rootdir, statusfunc = lambda s, c, n: None, numprocs = None):
             try:
                 filename, dcm = queue.get(False)
                 seriesid = dcm.get("SeriesInstanceUID", "???")
+
                 if seriesid not in series:
                     series[seriesid] = DicomSeries(seriesid, rootdir)
-                series[seriesid].addFile(filename, dcm)
-            except Empty:  # from queue.get(), keep trying so long as the loop condition is true
-                pass
 
-            count += 1
-            # update status only 100 times, doing it too frequently really slows things down
-            if numfiles < 100 or count % (numfiles // 100) == 0:
-                statusfunc("Loading DICOM files", count, numfiles)
+                series[seriesid].addFile(filename, dcm)
+
+            except Empty:
+                pass
 
     for seri in series:
         series[seri].sortSeries()
+        pass
 
-    statusfunc("", 0, 0)
     # all the built dicomSeries object are returned as a list
     return list(series.values())
 

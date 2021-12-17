@@ -108,7 +108,7 @@ class MenuAlterations(AbstractMenu):
         self.actionSegmentedLungsMaskWInternal.setEnabled(False)
         self.actionNegative.setEnabled(False)
 
-    def toggleActions(self, value: bool):
+    def toggleActions(self, value: bool, dicomContainer = None):
         self.actionLungsMask.setEnabled(value)
         self.actionSegmentedLungsMask.setEnabled(value)
         self.actionSegmentedLungsMaskWInternal.setEnabled(value)

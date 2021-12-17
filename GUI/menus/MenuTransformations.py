@@ -99,7 +99,7 @@ class MenuTransformations(AbstractMenu):
         self.actionClearTransformations.setStatusTip(_translate("MainWindow", "Clear transformations"))
         self.actionClearTransformations.setShortcut(_translate("MainWindow", "Ctrl+Ù"))
 
-    def toggleActions(self, enable: bool):
+    def toggleActions(self, value: bool, dicomContainer = None):
         for action in self.actions:
-            action.setEnabled(enable)
+            action.setEnabled(value)
 

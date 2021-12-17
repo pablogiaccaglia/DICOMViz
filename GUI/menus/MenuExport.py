@@ -59,7 +59,7 @@ class MenuExport(AbstractMenu):
         self.actionCopy_all_to_clipboard.setStatusTip(_translate("MainWindow", "Copy all images to clipboard"))
         self.actionCopy_all_to_clipboard.setShortcut(_translate("MainWindow", "Shift+C"))
 
-    def toggleActions(self, value: bool):
+    def toggleActions(self, value: bool, dicomContainer = None):
         self.actionExportImages.setEnabled(value)
         self.actionCopy_to_clipboard.setEnabled(value)
         self.actionCopy_all_to_clipboard.setEnabled(value)

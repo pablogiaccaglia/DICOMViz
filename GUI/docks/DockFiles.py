@@ -34,9 +34,12 @@ class DockFiles(Dock):
         if not len(self.listView.selectedItems()):
             self.window.graphicsView.setImageToView(None, None, None)
         else:
-            self.window.dicomHandler.toggleMenuOptions(True)
+
             item = self.getCurrentSelectedItem()
             filename = str(item.toolTip())
             selectedDicomFileObject = self.window.dicomHandler.srcDicomFileObjectsDict[filename]
+            self.window.dicomHandler.currentDicomObject = selectedDicomFileObject
+            self.window.dicomHandler.toggleMenuOptions(True)
+
             self.window.dicomHandler.setImageToView(selectedDicomFileObject, self.window.dicomHandler.currentViewMode, isFirstImage = False)
             self.currentPosition = self.listView.indexFromItem(item).column()

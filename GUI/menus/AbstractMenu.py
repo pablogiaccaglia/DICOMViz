@@ -8,5 +8,5 @@ class AbstractMenu(QMenu):
         self.menuBar = menuBar
         self.setObjectName(name)
 
-    def toggleActions(self, value: bool):
+    def toggleActions(self, value: bool, dicomContainer = None):
         pass

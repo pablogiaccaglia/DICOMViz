@@ -61,7 +61,7 @@ class DicomAbstractContainerClass(ABC):
                 pass
 
             return numpy.array(image, dtype = numpy.int16)
-        except Exception as e:
+        except Exception:
             return None
 
     def getImg(self):

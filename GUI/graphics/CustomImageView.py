@@ -1,7 +1,6 @@
 from collections import namedtuple, OrderedDict
 from enum import Enum
 
-import fuckit
 import numpy
 from PyQt6.QtWidgets import QApplication
 from pyqtgraph.graphicsItems.GradientEditorItem import Gradients
@@ -41,6 +40,7 @@ class CustomImageView(pyqtgraph.ImageView):
         self.ui.gifSlider.valueChanged.connect(self.__updateSliderOptionsValue)
         self.__addMoreActionsToImageViewMenu()
         self.__addMoreColorMaps()
+        self.ui.gifSlider.setEnabled(False)
 
     def executeTransformation(self, transformationEnum: TRANSFORMATION):
 
@@ -174,7 +174,7 @@ class CustomImageView(pyqtgraph.ImageView):
         self.ui.gifSlider.setTickInterval(2)
         self.ui.gifSlider.setValue(50)
         self.ui.gifSlider.setSliderPosition(50)
-        self.ui.gifSlider.setObjectName("test")
+        self.ui.gifSlider.setObjectName("gifSlider")
         self.ui.hboxSlider.addWidget(self.ui.gifSlider)
 
         self.ui.labelGifSliderValue = QtWidgets.QLabel(self.ui.optionsGroup)

@@ -4,6 +4,7 @@ import qdarktheme
 from PyQt6 import QtWidgets, QtCore
 from PyQt6.QtWidgets import QDialog, QFileDialog
 
+from DICOM.DicomSeries import DicomSeries
 from GUI.menus.AbstractMenu import AbstractMenu
 
 
@@ -50,15 +51,14 @@ class MenuFiles(AbstractMenu, QDialog):
         self.actionRemoveFromView = QtWidgets.QWidgetAction(self.menuBar)
         self.actionRemoveFromView.setObjectName("actionRemoveFromView")
         self.actionRemoveFromView.triggered.connect(self.menuBar.window.dicomHandler.removeImageFromView)
+
+        self.actionRemoveSeries = QtWidgets.QWidgetAction(self.menuBar)
+        self.actionRemoveSeries.setObjectName("actionRemoveSeries")
+        self.actionRemoveSeries.triggered.connect(self.menuBar.window.dicomHandler.removeSeries)
+
         self.toggleActions(False)
 
     def __addActions(self):
-        #  self.menuADD_DICOM_images.addAction(self.actionAddDICOMFile)
-        #  self.menuADD_DICOM_images.addAction(self.actionAddDICOMFolder)
-
-        #  self.addAction(self.actionNewWindow)
-        #  self.addAction(self.actionDuplicateWindow)
-
         self.addSeparator()
 
         self.addAction(self.actionOpenDICOMFile)
@@ -66,8 +66,8 @@ class MenuFiles(AbstractMenu, QDialog):
 
         self.addSeparator()
 
-        #   self.addAction(self.menuADD_DICOM_images.menuAction())
         self.addAction(self.actionRemoveFromView)
+        self.addAction(self.actionRemoveSeries)
 
     def __openDICOMFolder(self):
         folderPath = QFileDialog.getExistingDirectory(self.window, "Select Directory",
@@ -106,24 +106,25 @@ class MenuFiles(AbstractMenu, QDialog):
         self.actionOpenDICOMFolder.setStatusTip(_translate("MainWindow", "Open DICOM folder"))
         self.actionOpenDICOMFolder.setShortcut(_translate("MainWindow", "Ctrl+Shift+O"))
 
-        # self.actionAddDICOMFile.setText(_translate("MainWindow", "Add DICOM file"))
-        # self.actionAddDICOMFile.setStatusTip(_translate("MainWindow", "Add a new DICOM file"))
-
-        # self.actionAddDICOMFolder.setText(_translate("MainWindow", "Add DICOM folder"))
-        # self.actionAddDICOMFolder.setStatusTip(_translate("MainWindow", "ADD a new DICOM folder"))
-
         self.actionRemoveFromView.setText(_translate("MainWindow", "Remove image from view"))
-        self.actionRemoveFromView.setStatusTip(_translate("ManWindow", "Remove image from view"))
+        self.actionRemoveFromView.setStatusTip(_translate("MainWindow", "Remove image from view"))
         self.actionRemoveFromView.setShortcut(_translate("MainWindow", "§"))
 
-    def toggleActions(self, value: bool):
+        self.actionRemoveSeries.setText(_translate("MainWindow", "Remove series"))
+        self.actionRemoveSeries.setStatusTip(_translate("MainWindow", "Remove series"))
+        self.actionRemoveSeries.setShortcut(_translate("MainWindow", "ì"))
+
+    def toggleActions(self, value: bool, dicomContainer = None):
+
         self.actionRemoveFromView.setEnabled(value)
 
+        if isinstance(dicomContainer, DicomSeries) or not value:
+            self.toggleActionRemoveSeries(value)
+
+    def toggleActionRemoveSeries(self, value: bool):
+        self.actionRemoveSeries.setEnabled(value)
+
     def toggleFilesActions(self, value: bool):
-        #    self.actionNewWindow.setEnabled(value)
-        #    self.actionDuplicateWindow.setEnabled(value)
-        #    self.actionAddDICOMFile.setEnabled(value)
         self.actionOpenDICOMFile.setEnabled(value)
         self.actionOpenDICOMFolder.setEnabled(value)
-        #  self.actionAddDICOMFolder.setEnabled(value)
         self.menuADD_DICOM_images.setEnabled(value)

@@ -1,5 +1,3 @@
-
-
 from PyQt6 import QtWidgets, QtCore
 from PyQt6.QtWidgets import QTableView
 
@@ -62,3 +60,6 @@ class SeriesTableView(QTableView):
         self.resizeColumnsToContents()
         self.horizontalHeader().setStretchLastSection(True)
 
+    def clickRow(self, index: int):
+        self.selectRow(index)
+        self.clicked.emit(self.currentIndex())

@@ -33,7 +33,7 @@ class MenuZoom(AbstractMenu):
 
         self.toggleActions(False)
 
-    def toggleActions(self, value: bool):
+    def toggleActions(self, value: bool, dicomContainer = None):
         for action in self.actions:
             action.setEnabled(value)
 

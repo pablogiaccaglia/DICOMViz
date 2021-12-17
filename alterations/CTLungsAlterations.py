@@ -1,10 +1,5 @@
-import copy
-
 import numpy
 from skimage import measure
-import matplotlib.pyplot as plt
-import pylibjpeg
-from PIL import Image
 
 def largest_label_volume(im, bg = -1):
     vals, counts = numpy.unique(im, return_counts = True)

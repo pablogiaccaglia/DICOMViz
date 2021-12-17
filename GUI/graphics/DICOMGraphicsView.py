@@ -1,7 +1,6 @@
 from enum import Enum
 
 import numpy
-import fuckit
 
 from DICOM.DicomAbstractContainer import ViewMode, DicomAbstractContainerClass
 from GUI.graphics.CustomImageView import CustomImageView, TRANSFORMATION
@@ -37,7 +36,7 @@ class DICOMGraphicsView(CustomImageView):
         self.toggleGifSlider(value = False)
         self.isNegative = False
         self.previousMode = None
-        self.isAnimationOn = False
+        self._isAnimationOn = False
 
         self.scene.exportDialog = ExportDialog(self.scene)
 
@@ -74,7 +73,7 @@ class DICOMGraphicsView(CustomImageView):
             self.currentBgColor = self.bgColorBeforeNegative \
                 if self.bgColorBeforeNegative is not None else ViewModeBgColor[ViewMode(self.previousMode).name].value
 
-        if not self.isAnimationOn and not self.currentBgColor == 'white':
+        if not self.setIsAnimationOn and not self.currentBgColor == 'white':
             self.view.setBackgroundColor(self.currentBgColor)
             self.autoHistogramRangeOption = False
 
@@ -119,6 +118,7 @@ class DICOMGraphicsView(CustomImageView):
 
             if DicomContainer is not None:
                 self.window.dicomHandler.currentShownDicomFileObject = DicomContainer
+                self.window.dicomHandler.currentDicomObject = DicomContainer
 
         except Exception:
             self._setImageToView(None, ViewMode.ORIGINAL, False)
@@ -136,6 +136,7 @@ class DICOMGraphicsView(CustomImageView):
     def __gifSliderValueChange(self):
         speed = self.ui.gifSlider.value()
         self.window.dicomHandler.updateGifSpeedOnDialog(value = speed)
+        self.gifHandler.speed = speed
 
     def __updateHisto(self):
         self.optImageLevels = self._imageLevels
@@ -155,13 +156,19 @@ class DICOMGraphicsView(CustomImageView):
 
     def toggleGifButton(self, value: bool):
         self.ui.gifButton.setEnabled(value)
-        if value:
-            self.ui.sliderGroup.hide()
+
+    def stopGifHandler(self):
+        self.gifHandler.stopAnimation()
 
     def addGifHandler(self):
+
+        if self.gifHandler:
+            self.gifHandler.dockSeriesContentChanged()
+            return
+
         self.gifHandler = GIFHandler(dockSeries = self.window.seriesFilesDock, graphicsView = self,
                                      handler = self.window.dicomHandler)
-        self.gifHandler.start()
+        self.gifHandler.startAnimation()
 
     def zoomIn(self):
         self.view.zoomIn()
@@ -193,3 +200,10 @@ class DICOMGraphicsView(CustomImageView):
         except BaseException:
             print("ciao")
             pass
+
+    def isAnimationOn(self):
+        return self._isAnimationOn
+
+    def setIsAnimationOn(self, value):
+        self._isAnimationOn = value
+
