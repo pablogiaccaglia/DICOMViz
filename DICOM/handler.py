@@ -313,7 +313,7 @@ class Handler(QObject):
         self.__handleDockSeriesLoad()
 
         if self.window.graphicsView.gifHandler:
-            # self.window.graphicsView.stopGifHandler()
             self.window.graphicsView.addGifHandler()
 
-        #self.window.tagsGroupBox.fillTagsTree(dicomFile = self.currentSeriesObject)
+    def changeAnimateActionText(self):
+        self.window.menuBar.menuCine.changeAnimateActionText(isAnimationOn = self.window.graphicsView.isAnimationOn())

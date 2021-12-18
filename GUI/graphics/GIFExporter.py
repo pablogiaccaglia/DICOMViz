@@ -93,4 +93,5 @@ class GIFExporter(Exporter, QWidget):
         self.exportGIFSignal.emit()
 
     def saveGIF(self):
-        imageio.mimsave(f'./{self.fileName}', GIFExporter.GIFData, duration = self.speed)
+        print(str(self.fileName))
+        imageio.mimsave(self.fileName, GIFExporter.GIFData, duration = self.speed)

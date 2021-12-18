@@ -1,3 +1,5 @@
+from functools import partial
+
 from PyQt6 import QtCore, QtWidgets
 from PyQt6.QtWidgets import QMenu
 
@@ -9,6 +11,7 @@ class MenuCine(AbstractMenu):
     def __init__(self, menuBar):
         super().__init__(menuBar, "menuCine")
 
+        self._translate = QtCore.QCoreApplication.translate
         self.__defineActions()
         self.__addActions()
         self.__retranslateUI()
@@ -24,18 +27,33 @@ class MenuCine(AbstractMenu):
     def __defineActions(self):
         self.actionAnimateSeries = QtWidgets.QWidgetAction(self.menuBar)
         self.actionAnimateSeries.setObjectName("actionAnimateSeries")
-        self.actionAnimateSeries.triggered.connect(self.__addGifHandlerToGraphicsView)
+        self.actionAnimateSeries.triggered.connect(self.__toggleGifHandlerToGraphicsView)
 
     def __addActions(self):
         self.addAction(self.actionAnimateSeries)
 
     def __retranslateUI(self):
-        _translate = QtCore.QCoreApplication.translate
-        self.setTitle(_translate("MainWindow", "Cine"))
 
-        self.actionAnimateSeries.setText(_translate("MainWindow", "Animate"))
-        self.actionAnimateSeries.setStatusTip(_translate("MainWindow", "Animate series"))
-        self.actionAnimateSeries.setShortcut(_translate("MainWindow", "Ctrl+'"))
+        self.setTitle(self._translate("MainWindow", "Cine"))
 
-    def __addGifHandlerToGraphicsView(self):
-        self.menuBar.window.graphicsView.addGifHandler()
+        self.actionAnimateSeries.setText(self._translate("MainWindow", "Animate"))
+        self.actionAnimateSeries.setStatusTip(self._translate("MainWindow", "Animate series "))
+        self.actionAnimateSeries.setShortcut(self._translate("MainWindow", "Ctrl+'"))
+
+    def changeAnimateActionText(self, isAnimationOn: bool):
+
+        if isAnimationOn:
+            self.actionAnimateSeries.setText(self._translate("MainWindow", "Stop Animation"))
+        else:
+            self.actionAnimateSeries.setText(self._translate("MainWindow", "Animate"))
+
+    def __toggleGifHandlerToGraphicsView(self):
+
+        isAnimationOn = self.menuBar.window.graphicsView.isAnimationOn()
+
+        if isAnimationOn:
+            self.menuBar.window.graphicsView.stopGifHandler()
+        else:
+            self.menuBar.window.graphicsView.addGifHandler()
+
+        self.changeAnimateActionText(isAnimationOn = self.menuBar.window.graphicsView.isAnimationOn())

@@ -14,29 +14,54 @@ class GIFHandler(QWidget):
 
     def __init__(self, dockSeries: DockSeries, graphicsView: DICOMGraphicsView, handler):
         super().__init__(parent = graphicsView)
+
+        self.__speed = 50
+
         self.dockSeries = dockSeries
         self.currentSeriesIndex = dockSeries.currentSelectedSeriesIndex
         self.graphicsView = graphicsView
         self.handler = handler
         self.timer = QTimer()
         self.timer.timeout.connect(self.updateImage)
+        self.currentSeries = None
+        self.seriesSize = None
         self.dockSeriesContentChanged()
         self.currentImageIndex = 0
         self.stopped = False
         self.graphicsView.setIsAnimationOn(True)
         self.animationToggled.connect(partial(self.handler.toggleGifSlider, self.stopped))
-        self.__speed = 50
+        self.animationToggled.connect(self.handler.changeAnimateActionText)
 
     def dockSeriesContentChanged(self):
-        self.stopAnimation()
+
+        if self.currentSeries == self.handler.srcList[self.currentSeriesIndex][1]:
+            self.stopAnimation()
+            self.startAnimation()
+            return
+
+        self.stopAnimationTimer()
         self.currentSeriesIndex = self.dockSeries.currentSelectedSeriesIndex
         self.currentSeries = self.handler.srcList[self.currentSeriesIndex][1]
         self.seriesSize = self.currentSeries.size
+        self.startAnimationTimer()
 
-    def startAnimation(self):
+    def startAnimationTimer(self):
         self.timer.start(self.__speed)
 
+    def startAnimation(self):
+        self.stopped = False
+        self.graphicsView.setIsAnimationOn(True)
+        self.currentImageIndex = self.dockSeries.currentPosition
+        self.startAnimationTimer()
+        self.animationToggled.emit()
+
     def stopAnimation(self):
+        self.graphicsView.setIsAnimationOn(False)
+        self.stopAnimationTimer()
+        self.stopped = True
+        self.animationToggled.emit()
+
+    def stopAnimationTimer(self):
         self.timer.stop()
 
     def updateImage(self):
@@ -54,16 +79,9 @@ class GIFHandler(QWidget):
     def keyPressEvent(self, qKeyEvent):
         if qKeyEvent.key() == QtCore.Qt.Key.Key_Return:
             if self.stopped is False:
-                self.graphicsView.setIsAnimationOn(False)
                 self.stopAnimation()
-                self.stopped = True
-                self.animationToggled.emit()
             else:
-                self.stopped = False
-                self.graphicsView.setIsAnimationOn(True)
-                self.currentImageIndex = self.dockSeries.currentPosition
                 self.startAnimation()
-                self.animationToggled.emit()
 
     @classmethod
     def prepareGIFExport(cls, data):
@@ -77,5 +95,5 @@ class GIFHandler(QWidget):
     def speed(self, speed):
         if speed > 0:
             self.__speed = abs(speed - 201)
-            self.stopAnimation()
-            self.startAnimation()
+            self.stopAnimationTimer()
+            self.startAnimationTimer()

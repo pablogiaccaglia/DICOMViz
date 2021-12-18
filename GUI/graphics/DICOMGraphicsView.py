@@ -168,7 +168,7 @@ class DICOMGraphicsView(CustomImageView):
 
         self.gifHandler = GIFHandler(dockSeries = self.window.seriesFilesDock, graphicsView = self,
                                      handler = self.window.dicomHandler)
-        self.gifHandler.startAnimation()
+        # self.gifHandler.startAnimation()
 
     def zoomIn(self):
         self.view.zoomIn()
@@ -206,4 +206,3 @@ class DICOMGraphicsView(CustomImageView):
 
     def setIsAnimationOn(self, value):
         self._isAnimationOn = value
-
