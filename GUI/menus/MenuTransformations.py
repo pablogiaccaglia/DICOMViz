@@ -2,7 +2,8 @@ from functools import partial
 
 from PyQt6 import QtCore, QtWidgets
 
-from GUI.graphics.CustomImageView import TRANSFORMATION
+from GUI.graphics.CustomImageView import ROTATION_TRANSFORMATION
+from GUI.graphics.imageUtils import FLIP_TRANSFORMATION
 from GUI.menus.AbstractMenu import AbstractMenu
 
 
@@ -29,27 +30,27 @@ class MenuTransformations(AbstractMenu):
         self.actionRotate90degreesCCW = QtWidgets.QWidgetAction(self.menuBar)
         self.actionRotate90degreesCCW.setObjectName("actionRotate90degreesCCW")
         self.actionRotate90degreesCCW.triggered.connect(
-            partial(self.handler.applyTransformationToShownImage, TRANSFORMATION.ROTATE_90_CCW))
+            partial(self.handler.applyTransformationToShownImage, ROTATION_TRANSFORMATION.ROTATE_90_CCW))
 
         self.actionRotate90DegreesCW = QtWidgets.QWidgetAction(self.menuBar)
         self.actionRotate90DegreesCW.setObjectName("actionRotate90DegreesCW")
         self.actionRotate90DegreesCW.triggered.connect(
-            partial(self.handler.applyTransformationToShownImage, TRANSFORMATION.ROTATE_90_CW))
+            partial(self.handler.applyTransformationToShownImage, ROTATION_TRANSFORMATION.ROTATE_90_CW))
 
         self.actionRotate180Degrees = QtWidgets.QWidgetAction(self.menuBar)
         self.actionRotate180Degrees.setObjectName("actionRotate180Degrees")
         self.actionRotate180Degrees.triggered.connect(
-            partial(self.handler.applyTransformationToShownImage, TRANSFORMATION.ROTATE_180))
+            partial(self.handler.applyTransformationToShownImage, ROTATION_TRANSFORMATION.ROTATE_180))
 
         self.actionFlipHorizontal = QtWidgets.QWidgetAction(self.menuBar)
         self.actionFlipHorizontal.setObjectName("actionFlipHorizontal")
         self.actionFlipHorizontal.triggered.connect(
-            partial(self.handler.applyTransformationToShownImage, TRANSFORMATION.FLIP_HORIZONTAL))
+            partial(self.handler.applyTransformationToShownImage, FLIP_TRANSFORMATION.FLIP_HORIZONTAL))
 
         self.actionFlipVertical = QtWidgets.QWidgetAction(self.menuBar)
         self.actionFlipVertical.setObjectName("actionFlip_vertical")
         self.actionFlipVertical.triggered.connect(
-            partial(self.handler.applyTransformationToShownImage, TRANSFORMATION.FLIP_VERTICAL))
+            partial(self.handler.applyTransformationToShownImage, FLIP_TRANSFORMATION.FLIP_VERTICAL))
 
         self.actionClearTransformations = QtWidgets.QWidgetAction(self.menuBar)
         self.actionClearTransformations.setObjectName("actionClearTransformations")

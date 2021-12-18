@@ -25,6 +25,7 @@ class GIFHandler(QWidget):
         self.timer.timeout.connect(self.updateImage)
         self.currentSeries = None
         self.seriesSize = None
+        self.dockSeries.setEnabled(False)
         self.dockSeriesContentChanged()
         self.currentImageIndex = 0
         self.stopped = False
@@ -49,6 +50,7 @@ class GIFHandler(QWidget):
         self.timer.start(self.__speed)
 
     def startAnimation(self):
+        self.dockSeries.setEnabled(False)
         self.stopped = False
         self.graphicsView.setIsAnimationOn(True)
         self.currentImageIndex = self.dockSeries.currentPosition
@@ -56,6 +58,7 @@ class GIFHandler(QWidget):
         self.animationToggled.emit()
 
     def stopAnimation(self):
+        self.dockSeries.setEnabled(True)
         self.graphicsView.setIsAnimationOn(False)
         self.stopAnimationTimer()
         self.stopped = True

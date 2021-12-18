@@ -5,20 +5,18 @@ import numpy
 from PyQt6.QtWidgets import QApplication
 from pyqtgraph.graphicsItems.GradientEditorItem import Gradients
 import pyqtgraph
+
+from DICOM.DicomAbstractContainer import ViewMode
+from GUI.graphics import imageUtils
 from GUI.graphics.ColorDialog import ColorAction
 from GUI.graphics.CustomViewBox import CustomViewBox
 from PyQt6 import QtWidgets, QtCore, QtGui
 from PyQt6.QtCore import Qt
 
-transformationTuple = namedtuple("transformationTuple", ["function", "partial_params"])
+from GUI.graphics.imageUtils import ROTATION_TRANSFORMATION
+
 translate = QtCore.QCoreApplication.translate
 
-class TRANSFORMATION(Enum):
-    ROTATE_90_CCW = transformationTuple(function = numpy.rot90, partial_params = (1, (1, 0)))
-    ROTATE_90_CW = transformationTuple(function = numpy.rot90, partial_params = (1, (0, 1)))
-    ROTATE_180 = transformationTuple(function = numpy.rot90, partial_params = (2, (1, 0)))
-    FLIP_HORIZONTAL = transformationTuple(function = numpy.fliplr, partial_params = None)
-    FLIP_VERTICAL = transformationTuple(function = numpy.flipud, partial_params = None)
 
 class CustomImageView(pyqtgraph.ImageView):
     """
@@ -41,21 +39,47 @@ class CustomImageView(pyqtgraph.ImageView):
         self.__addMoreActionsToImageViewMenu()
         self.__addMoreColorMaps()
         self.ui.gifSlider.setEnabled(False)
+        self.currentRotationDegrees = 0
+        self.isSomeTransformationOn = False
+        self.currentActiveRotationTransformation = None
+        self.currentActiveFlipTransformation = None
+        self.currentEffectiveRotationTransformation = None
+        self.settedImage = None
+        self.negativeImage = None
+        self.isSomeTransformationAlreadyAppliedToCurrentImg = False
 
-    def executeTransformation(self, transformationEnum: TRANSFORMATION):
+    def determineTransformation(self, transformationEnum: ROTATION_TRANSFORMATION):
 
-        if self.image is None:
-            return
+            rotationDegreesOfCurrentTransformation = imageUtils.getRotationDegreesFromTransformation(
+                    transformation = transformationEnum)
+            self.currentRotationDegrees = self.currentRotationDegrees + rotationDegreesOfCurrentTransformation
 
-        transformation = transformationEnum.value.function
-        partial_params = transformationEnum.value.partial_params
+            if (self.currentRotationDegrees >= 360) or (self.currentRotationDegrees <= -360) or (self.currentRotationDegrees == 0):
+                self.clearTransformations()
+                return
+
+            transformationTuple = imageUtils.getTransformationFromRotationDegrees(self.currentRotationDegrees)
+            transformation = transformationTuple[0]
+            self.currentRotationDegrees = transformationTuple[1]
+            if transformation is None:
+                self.clearTransformations()
+                return
+            else:
+                self.currentEffectiveRotationTransformation = transformation
+
+    def executeTransformation(self, image, transformation):
+
+        if image is None:
+            return image
+
+        partial_params = transformation.value.partial_params
 
         if partial_params is not None:
-            alteredImage = transformation(self.image, partial_params[0], partial_params[1])
+            alteredImage = transformation.value.function(image.T, partial_params[0], partial_params[1])
         else:
-            alteredImage = transformation(self.image)
+            alteredImage = transformation.value.function(image.T)
 
-        return alteredImage
+        return alteredImage.T
 
     def __addSliderButtonToImageView(self):
 
@@ -314,3 +338,16 @@ class CustomImageView(pyqtgraph.ImageView):
         act.name = grName
 
         return act
+
+    def _setImageToView(self, img, mode: ViewMode, isFirstImage: bool):
+        pass
+
+    def clearTransformations(self):
+        self.isSomeTransformationOn = False
+        self.isSomeTransformationAlreadyAppliedToCurrentImg = False
+        self.currentActiveRotationTransformation = None
+        self.currentEffectiveRotationTransformation = None
+        self.currentActiveFlipTransformation = None
+        self.currentRotationDegrees = 0
+        self.settedImage = self.negativeImage
+        self._setImageToView(img = self.currentOriginalImageData, mode = self.currentViewMode, isFirstImage = False)

@@ -16,9 +16,10 @@ from queue import Queue, Empty
 from GUI.docks.Dock import Dock
 from GUI.docks.DockFiles import DockFiles
 from GUI.docks.DockSeries import DockSeries
-from GUI.graphics.CustomImageView import TRANSFORMATION
+from GUI.graphics.CustomImageView import ROTATION_TRANSFORMATION
 from GUI.graphics.GIFExporter import GIFExporter
 from GUI.graphics.GIFHandler import GIFHandler
+from GUI.graphics.imageUtils import FLIP_TRANSFORMATION
 
 
 class Handler(QObject):
@@ -72,6 +73,7 @@ class Handler(QObject):
 
     def setImageToView(self, DicomContainer: 'DicomAbstractContainerClass', viewMode: ViewMode, isFirstImage: bool):
 
+        self.window.graphicsView.isSomeTransformationAlreadyAppliedToCurrentImg = False
         if self.isFirstLoad:
             self.isFirstLoad = False
             self.toggleMenuOptions(True)
@@ -199,8 +201,12 @@ class Handler(QObject):
     def getCurrentShownImage(self):
         return self.window.graphicsView.img
 
-    def applyTransformationToShownImage(self, transformation: TRANSFORMATION):
-        self.window.graphicsView.applyTransformation(transformation)
+    def applyTransformationToShownImage(self, transformation):
+
+        if isinstance(transformation, ROTATION_TRANSFORMATION):
+                self.window.graphicsView.applyTransformations(rotationTransformation = transformation, fromAction = True)
+        elif isinstance(transformation, FLIP_TRANSFORMATION):
+                self.window.graphicsView.applyTransformations(flipTransformation = transformation, fromAction = True)
 
     def clearTransformationsToShownImage(self):
         self.window.graphicsView.clearTransformations()

@@ -3,11 +3,12 @@ from enum import Enum
 import numpy
 
 from DICOM.DicomAbstractContainer import ViewMode, DicomAbstractContainerClass
-from GUI.graphics.CustomImageView import CustomImageView, TRANSFORMATION
+from GUI.graphics.CustomImageView import CustomImageView, ROTATION_TRANSFORMATION
 from pyqtgraph.GraphicsScene.exportDialog import ExportDialog
 
 # VIEW MODES
 from GUI.graphics.GIFHandler import GIFHandler
+from GUI.graphics.imageUtils import FLIP_TRANSFORMATION
 
 
 class ViewModeBgColor(Enum):
@@ -42,6 +43,7 @@ class DICOMGraphicsView(CustomImageView):
 
         self.currentBgColor = "black"
         self.bgColorBeforeNegative = None
+        self.negativeImage = None
 
     def _setImageToView(self, img, mode: ViewMode, isFirstImage: bool):
 
@@ -78,7 +80,11 @@ class DICOMGraphicsView(CustomImageView):
             self.autoHistogramRangeOption = False
 
         self.view.setMenuEnabled(True)
-        self.setImage(img.T, autoRange = self.autoRangeOption, autoHistogramRange = self.autoHistogramRangeOption,
+
+        self.settedImage = img
+
+        self.setImage(img.T, autoRange = self.autoRangeOption,
+                      autoHistogramRange = self.autoHistogramRangeOption,
                       autoLevels = self.autoLevelsOption, levelMode = 'mono')
 
         if mode == ViewMode.NEGATIVE and self.previousMode != ViewMode.NEGATIVE:
@@ -114,13 +120,22 @@ class DICOMGraphicsView(CustomImageView):
             if self.isNegative:
                 image = numpy.invert(self.currentOriginalImageData)
 
-            self._setImageToView(img = image, mode = viewMode, isFirstImage = isFirstImage)
+            if not numpy.array_equal(image, self.negativeImage):
+                self.negativeImage = image
+
+            if self.isSomeTransformationOn:
+                self.applyTransformations(flipTransformation = self.currentActiveFlipTransformation,
+                                          rotationTransformation = self.currentEffectiveRotationTransformation,
+                                          image = image)
+
+            else:
+                self._setImageToView(img = image, mode = viewMode, isFirstImage = isFirstImage)
 
             if DicomContainer is not None:
                 self.window.dicomHandler.currentShownDicomFileObject = DicomContainer
                 self.window.dicomHandler.currentDicomObject = DicomContainer
 
-        except Exception:
+        except Exception as e:
             self._setImageToView(None, ViewMode.ORIGINAL, False)
             self.window.setWindowTitle("DICOM Visualizer: No image")
 
@@ -168,7 +183,6 @@ class DICOMGraphicsView(CustomImageView):
 
         self.gifHandler = GIFHandler(dockSeries = self.window.seriesFilesDock, graphicsView = self,
                                      handler = self.window.dicomHandler)
-        # self.gifHandler.startAnimation()
 
     def zoomIn(self):
         self.view.zoomIn()
@@ -179,12 +193,90 @@ class DICOMGraphicsView(CustomImageView):
     def setViewSize(self, left, top, width, height):
         self.view.setViewSize(left = left, top = top, width = width, height = height)
 
-    def applyTransformation(self, transformation: TRANSFORMATION):
-        self._setImageToView(img = self.executeTransformation(transformation).T, mode = self.currentViewMode,
+    def applyRotationTransformations(self, transformation: ROTATION_TRANSFORMATION, image = None,
+                                     fromAction: bool = False):
+
+        if transformation is None:
+            return None
+
+        if image is None:
+            image = self.negativeImage
+
+        self.isSomeTransformationOn = True
+        self.currentActiveRotationTransformation = transformation
+        self.autoRangeOption = False
+
+        if fromAction:
+            self.determineTransformation(transformation)
+
+        if self.currentEffectiveRotationTransformation is None:
+            transformedImage = image
+        else:
+            transformedImage = self.executeTransformation(image, self.currentEffectiveRotationTransformation)
+
+        if transformedImage is None:
+            transformedImage = image
+
+        return transformedImage
+
+    def applyFlipTransformation(self, transformation: FLIP_TRANSFORMATION, image = None):
+
+        if transformation is None:
+            return
+
+        if image is None:
+            image = self.negativeImage
+
+        self.isSomeTransformationOn = True
+        self.currentActiveFlipTransformation = transformation
+        self.autoRangeOption = False
+
+        transformedImage = self.executeTransformation(image, self.currentActiveFlipTransformation)
+
+        if transformedImage is None:
+            transformedImage = image
+
+        return transformedImage
+
+    def applyTransformations(self, flipTransformation: FLIP_TRANSFORMATION = None,
+                             rotationTransformation: ROTATION_TRANSFORMATION = None, image = None,
+                             fromAction: bool = False):
+
+        print(str(self.isSomeTransformationAlreadyAppliedToCurrentImg))
+
+        if image is None:
+            if self.isSomeTransformationAlreadyAppliedToCurrentImg:
+                image = self.settedImage
+            else:
+                image = self.negativeImage
+
+        rotatedImage = self.applyRotationTransformations(transformation = rotationTransformation, image = image,
+                                                         fromAction = fromAction)
+
+        if rotatedImage is None:
+            if self.isSomeTransformationAlreadyAppliedToCurrentImg:
+                imageToFlip = self.settedImage
+            else:
+                imageToFlip = self.negativeImage
+        else:
+            imageToFlip = rotatedImage
+            self.isSomeTransformationAlreadyAppliedToCurrentImg = True
+
+        flippedImage = self.applyFlipTransformation(transformation = flipTransformation, image = imageToFlip)
+
+        if flippedImage is None:
+            imageToSet = imageToFlip
+        else:
+            imageToSet = flippedImage
+            self.isSomeTransformationAlreadyAppliedToCurrentImg = True
+
+        self._setImageToView(img = imageToSet, mode = self.currentViewMode,
                              isFirstImage = False)
 
-    def clearTransformations(self):
-        self._setImageToView(img = self.currentOriginalImageData, mode = self.currentViewMode, isFirstImage = False)
+        if fromAction:
+            self.isSomeTransformationAlreadyAppliedToCurrentImg = True
+        else:
+            self.isSomeTransformationAlreadyAppliedToCurrentImg = False
 
     def __hideActiveSections(self):
         self.ui.sliderGroup.hide()
@@ -198,7 +290,6 @@ class DICOMGraphicsView(CustomImageView):
             self.scene.exportDialog.ui.formatList.clear()
             self.scene.exportDialog.updateFormatList()
         except BaseException:
-            print("ciao")
             pass
 
     def isAnimationOn(self):
