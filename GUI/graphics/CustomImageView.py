@@ -1,14 +1,15 @@
-from collections import namedtuple, OrderedDict
-from enum import Enum
+from collections import OrderedDict
+from typing import Optional
 
-import numpy
+from PyQt6.QtGui import QImage
 from PyQt6.QtWidgets import QApplication
+from numpy import ndarray
 from pyqtgraph.graphicsItems.GradientEditorItem import Gradients
 import pyqtgraph
 
 from DICOM.DicomAbstractContainer import ViewMode
 from GUI.graphics import imageUtils
-from GUI.graphics.ColorDialog import ColorAction
+from GUI.graphics.ColorDialog import ColorDialogAction
 from GUI.graphics.CustomViewBox import CustomViewBox
 from PyQt6 import QtWidgets, QtCore, QtGui
 from PyQt6.QtCore import Qt
@@ -20,7 +21,7 @@ translate = QtCore.QCoreApplication.translate
 
 class CustomImageView(pyqtgraph.ImageView):
     """
-    Subclass of PlotWidget
+    Subclass of ImageView
     """
 
     def __init__(self, parent = None):
@@ -29,45 +30,35 @@ class CustomImageView(pyqtgraph.ImageView):
         """
         super(CustomImageView, self).__init__(parent, view = CustomViewBox(imageView = self))
         self._translate = QtCore.QCoreApplication.translate
-        self.autoRangeOption = False
-        self.autoLevelsOption = True
-        self.autoHistogramRangeOption = True
-        self.__addSliderButtonToImageView()
-        self.__addOptionsButtonToImageView()
-        self.currentOriginalImageData = None
-        self.ui.gifSlider.valueChanged.connect(self.__updateSliderOptionsValue)
-        self.__addMoreActionsToImageViewMenu()
-        self.__addMoreColorMaps()
+        self._autoRangeOption = False
+        self._autoLevelsOption = True
+        self._autoHistogramRangeOption = True
+        self._addSliderButtonToImageView()
+        self._addOptionsButtonToImageView()
+        self._currentOriginalImageData = None
+        self.ui.gifSlider.valueChanged.connect(self._updateSliderOptionsValue)
+        self._addMoreActionsToImageViewMenu()
+        self._addMoreColorMaps()
         self.ui.gifSlider.setEnabled(False)
-        self.currentRotationDegrees = 0
-        self.isSomeTransformationOn = False
-        self.currentActiveRotationTransformation = None
-        self.currentActiveFlipTransformation = None
-        self.currentEffectiveRotationTransformation = None
-        self.settedImage = None
-        self.negativeImage = None
-        self.isSomeTransformationAlreadyAppliedToCurrentImg = False
+        self._currentRotationDegrees = 0
+        self._isSomeTransformationOn = False
+        self._currentActiveRotationTransformation = None
+        self._currentActiveFlipTransformation = None
+        self._currentEffectiveRotationTransformation = None
+        self._settedImage = None
+        self._negativeImage = None
+        self._isSomeTransformationAlreadyAppliedToCurrentImg = False
 
-    def determineTransformation(self, transformationEnum: ROTATION_TRANSFORMATION):
+    @property
+    def isSomeTransformationAlreadyAppliedToCurrentImg(self) -> bool:
+        return self._isSomeTransformationAlreadyAppliedToCurrentImg
 
-            rotationDegreesOfCurrentTransformation = imageUtils.getRotationDegreesFromTransformation(
-                    transformation = transformationEnum)
-            self.currentRotationDegrees = self.currentRotationDegrees + rotationDegreesOfCurrentTransformation
+    @isSomeTransformationAlreadyAppliedToCurrentImg.setter
+    def isSomeTransformationAlreadyAppliedToCurrentImg(self, value: bool) -> None:
+        self._isSomeTransformationAlreadyAppliedToCurrentImg = value
 
-            if (self.currentRotationDegrees >= 360) or (self.currentRotationDegrees <= -360) or (self.currentRotationDegrees == 0):
-                self.clearTransformations()
-                return
-
-            transformationTuple = imageUtils.getTransformationFromRotationDegrees(self.currentRotationDegrees)
-            transformation = transformationTuple[0]
-            self.currentRotationDegrees = transformationTuple[1]
-            if transformation is None:
-                self.clearTransformations()
-                return
-            else:
-                self.currentEffectiveRotationTransformation = transformation
-
-    def executeTransformation(self, image, transformation):
+    @classmethod
+    def executeTransformation(cls, image, transformation) -> Optional[ndarray]:
 
         if image is None:
             return image
@@ -81,7 +72,153 @@ class CustomImageView(pyqtgraph.ImageView):
 
         return alteredImage.T
 
-    def __addSliderButtonToImageView(self):
+    def determineTransformation(self, transformationEnum: ROTATION_TRANSFORMATION) -> None:
+
+            rotationDegreesOfCurrentTransformation = imageUtils.getRotationDegreesFromTransformation(
+                    transformation = transformationEnum)
+            self._currentRotationDegrees = self._currentRotationDegrees + rotationDegreesOfCurrentTransformation
+
+            if (self._currentRotationDegrees >= 360) or (self._currentRotationDegrees <= -360) or (self._currentRotationDegrees == 0):
+                self.clearTransformations()
+                return
+
+            transformationTuple = imageUtils.getTransformationFromRotationDegrees(self._currentRotationDegrees)
+            transformation = transformationTuple[0]
+            self._currentRotationDegrees = transformationTuple[1]
+            if transformation is None:
+                self.clearTransformations()
+                return
+            else:
+                self._currentEffectiveRotationTransformation = transformation
+
+    def autoRange(self) -> None:
+        super(CustomImageView, self).autoRange()
+        self.view.resetSize()
+
+    def showExportDialog(self) -> None:
+        self.scene.showExportDialog()
+
+    def setBackgroundColorOnSignal(self) -> None:
+        self.view.setBackgroundColor(self.changeBgColorAction.color)
+
+    def getQImage(self) -> Optional[QImage]:
+        return self.imageItem.qimage
+
+    def copyImageToClipboard(self) -> None:
+        qImage = self.getQImage()
+        QApplication.clipboard().setImage(qImage)
+
+    def clearTransformations(self):
+        self._isSomeTransformationOn = False
+        self._isSomeTransformationAlreadyAppliedToCurrentImg = False
+        self._currentActiveRotationTransformation = None
+        self._currentEffectiveRotationTransformation = None
+        self._currentActiveFlipTransformation = None
+        self._currentRotationDegrees = 0
+        self._settedImage = self._negativeImage
+        self._setImageToView(img = self._currentOriginalImageData, mode = self.currentViewMode, isFirstImage = False)
+
+    def _addMoreColorMaps(self) -> None:
+
+        self.additionalGradients = OrderedDict()
+        list_of_maps = pyqtgraph.colormap.listMaps('matplotlib')
+        list_of_maps = sorted(list_of_maps, key = lambda x: x.lower())
+
+        for map_name in list_of_maps:
+            cm = pyqtgraph.colormap.get(map_name, source = 'matplotlib', skipCache = True)
+
+            entry = {
+                'ticks': [],
+                'mode':  'rgb'
+            }
+
+            stops = cm.getStops()
+
+            for i in range(len(stops)):
+                entry['ticks'].append((stops[0][i], tuple(stops[1][i])))
+
+            self.additionalGradients.update({map_name.lower(): entry})
+            Gradients.update({map_name.lower(): entry})
+
+        self.ui.histogram.gradient.menu.removeAction(self.ui.histogram.gradient.rgbAction)
+        self.ui.histogram.gradient.menu.removeAction(self.ui.histogram.gradient.hsvAction)
+
+        for g in self.additionalGradients:
+            act = self._createBoxForColorAction(g)
+            self.ui.histogram.gradient.menu.addAction(act)
+
+        self.ui.histogram.gradient.menu.addAction(self.ui.histogram.gradient.rgbAction)
+        self.ui.histogram.gradient.menu.addAction(self.ui.histogram.gradient.hsvAction)
+        self.ui.histogram.gradient.menu.addSeparator()
+        self.ui.histogram.gradient.restoreState(Gradients['grey'])
+
+    def _createBoxForColorAction(self, grName) -> QtWidgets.QWidgetAction:
+        px = QtGui.QPixmap(100, 15)
+        p = QtGui.QPainter(px)
+        self.ui.histogram.gradient.restoreState(self.additionalGradients[grName])
+        grad = self.ui.histogram.gradient.getGradient()
+        brush = QtGui.QBrush(grad)
+        p.fillRect(QtCore.QRect(0, 0, 100, 15), brush)
+        p.end()
+        label = QtWidgets.QLabel()
+        label.setPixmap(px)
+        label.setContentsMargins(1, 1, 1, 1)
+        labelName = QtWidgets.QLabel(grName)
+        hbox = QtWidgets.QHBoxLayout()
+        hbox.addWidget(labelName)
+        hbox.addWidget(label)
+        widget = QtWidgets.QWidget()
+        widget.setLayout(hbox)
+        act = QtWidgets.QWidgetAction(self.ui.histogram.gradient)
+        act.setDefaultWidget(widget)
+        act.triggered.connect(self.ui.histogram.gradient.contextMenuClicked)
+        act.name = grName
+
+        return act
+
+    def _setImageToView(self, img, mode: ViewMode, isFirstImage: bool):
+        pass
+
+    def _autoHistogramRangeRadioButtonClicked(self) -> None:
+        self._autoHistogramRangeOption = self.ui.autoHistogramRangeRadioButton.isChecked()
+        if self._autoHistogramRangeOption:
+            self.updateImage()
+
+    def _autoRangeRadioButtonClicked(self) -> None:
+        self._autoRangeOption = self.ui.autoRangeRadioButton.isChecked()
+        if self._autoRangeOption:
+            self.autoRange()
+
+    def _autoLevelsRadioButtonClicked(self) -> None:
+        self._autoLevelsOption = self.ui.autoLevelsRadioButton.isChecked()
+        if self._autoLevelsOption:
+            self.autoLevels()
+
+    def _addMoreActionsToImageViewMenu(self) -> None:
+        self.buildMenu()
+        self._addChangeBackgroundColorActionToImageViewMenu()
+        self._addCopyActionToImageViewMenu()
+
+    def _addCopyActionToImageViewMenu(self) -> None:
+        self.copyAction = QtGui.QAction(translate("ImageView", "Copy"), self.menu)
+        self.copyAction.triggered.connect(self.copyImageToClipboard)
+        self.menu.addAction(self.copyAction)
+
+    def _addChangeBackgroundColorActionToImageViewMenu(self) -> None:
+        self.changeBgColorAction = ColorDialogAction(translate("ImageView", "Change Background Color"), self.menu)
+        self.menu.addAction(self.changeBgColorAction)
+        self.changeBgColorAction.colorChangedSignal.connect(self.setBackgroundColorOnSignal)
+
+    def _sliderButtonClicked(self, b) -> None:
+        self.ui.sliderGroup.setVisible(b)
+
+    def _optionsButtonClicked(self, b) -> None:
+        self.ui.optionsGroup.setVisible(b)
+
+    def _updateSliderOptionsValue(self) -> None:
+        self.ui.labelGifSliderValue.setText(self._translate("Form", str(self.ui.gifSlider.value())))
+
+    def _addSliderButtonToImageView(self) -> None:
 
         self.ui.sliderButton = QtWidgets.QPushButton(self.ui.layoutWidget)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Fixed)
@@ -118,11 +255,11 @@ class CustomImageView(pyqtgraph.ImageView):
 
         QtCore.QMetaObject.connectSlotsByName(self)
 
-        self.ui.sliderButton.clicked.connect(self.__sliderButtonClicked)
+        self.ui.sliderButton.clicked.connect(self._sliderButtonClicked)
 
-        self.__additionalGradients = None
+        self._additionalGradients = None
 
-    def __addOptionsButtonToImageView(self):
+    def _addOptionsButtonToImageView(self) -> None:
 
         self.ui.optionsButton = QtWidgets.QPushButton(self.ui.layoutWidget)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Fixed)
@@ -220,134 +357,7 @@ class CustomImageView(pyqtgraph.ImageView):
 
         QtCore.QMetaObject.connectSlotsByName(self)
 
-        self.ui.optionsButton.clicked.connect(self.__optionsButtonClicked)
-        self.ui.autoHistogramRangeRadioButton.clicked.connect(self.__autoHistogramRangeRadioButtonClicked)
-        self.ui.autoRangeRadioButton.clicked.connect(self.__autoRangeRadioButtonClicked)
-        self.ui.autoLevelsRadioButton.clicked.connect(self.__autoLevelsRadioButtonClicked)
-
-    def autoRange(self):
-        super(CustomImageView, self).autoRange()
-        self.view.resetSize()
-
-    def __sliderButtonClicked(self, b):
-        self.ui.sliderGroup.setVisible(b)
-
-    def __optionsButtonClicked(self, b):
-        self.ui.optionsGroup.setVisible(b)
-
-    def __updateSliderOptionsValue(self):
-        self.ui.labelGifSliderValue.setText(self._translate("Form", str(self.ui.gifSlider.value())))
-
-    def showExportDialog(self):
-        self.scene.showExportDialog()
-
-    def __autoHistogramRangeRadioButtonClicked(self):
-        self.autoHistogramRangeOption = self.ui.autoHistogramRangeRadioButton.isChecked()
-        if self.autoHistogramRangeOption:
-            self.updateImage()
-
-    def __autoRangeRadioButtonClicked(self):
-        self.autoRangeOption = self.ui.autoRangeRadioButton.isChecked()
-        if self.autoRangeOption:
-            self.autoRange()
-
-    def __autoLevelsRadioButtonClicked(self):
-        self.autoLevelsOption = self.ui.autoLevelsRadioButton.isChecked()
-        if self.autoLevelsOption:
-            self.autoLevels()
-
-    def __addMoreActionsToImageViewMenu(self):
-        self.buildMenu()
-        self.__addChangeBackgroundColorActionToImageViewMenu()
-        self.__addCopyActionToImageViewMenu()
-
-    def __addCopyActionToImageViewMenu(self):
-        self.copyAction = QtGui.QAction(translate("ImageView", "Copy"), self.menu)
-        self.copyAction.triggered.connect(self.copyImageToClipboard)
-        self.menu.addAction(self.copyAction)
-
-    def __addChangeBackgroundColorActionToImageViewMenu(self):
-        self.changeBgColorAction = ColorAction(translate("ImageView", "Change Background Color"), self.menu)
-        self.menu.addAction(self.changeBgColorAction)
-        self.changeBgColorAction.colorChangedSignal.connect(self.setBackgroundColorOnSignal)
-
-    def setBackgroundColorOnSignal(self):
-        self.view.setBackgroundColor(self.changeBgColorAction.color)
-
-    def getQImage(self):
-        return self.imageItem.qimage
-
-    def copyImageToClipboard(self):
-        qImage = self.getQImage()
-        QApplication.clipboard().setImage(qImage)
-
-    def __addMoreColorMaps(self):
-
-        self.additionalGradients = OrderedDict()
-        list_of_maps = pyqtgraph.colormap.listMaps('matplotlib')
-        list_of_maps = sorted(list_of_maps, key = lambda x: x.lower())
-
-        for map_name in list_of_maps:
-            cm = pyqtgraph.colormap.get(map_name, source = 'matplotlib', skipCache = True)
-
-            entry = {
-                'ticks': [],
-                'mode':  'rgb'
-            }
-
-            stops = cm.getStops()
-
-            for i in range(len(stops)):
-                entry['ticks'].append((stops[0][i], tuple(stops[1][i])))
-
-            self.additionalGradients.update({map_name.lower(): entry})
-            Gradients.update({map_name.lower(): entry})
-
-        self.ui.histogram.gradient.menu.removeAction(self.ui.histogram.gradient.rgbAction)
-        self.ui.histogram.gradient.menu.removeAction(self.ui.histogram.gradient.hsvAction)
-
-        for g in self.additionalGradients:
-            act = self.__createBoxForColorAction(g)
-            self.ui.histogram.gradient.menu.addAction(act)
-
-        self.ui.histogram.gradient.menu.addAction(self.ui.histogram.gradient.rgbAction)
-        self.ui.histogram.gradient.menu.addAction(self.ui.histogram.gradient.hsvAction)
-        self.ui.histogram.gradient.menu.addSeparator()
-        self.ui.histogram.gradient.restoreState(Gradients['grey'])
-
-    def __createBoxForColorAction(self, grName) -> QtWidgets.QWidgetAction:
-        px = QtGui.QPixmap(100, 15)
-        p = QtGui.QPainter(px)
-        self.ui.histogram.gradient.restoreState(self.additionalGradients[grName])
-        grad = self.ui.histogram.gradient.getGradient()
-        brush = QtGui.QBrush(grad)
-        p.fillRect(QtCore.QRect(0, 0, 100, 15), brush)
-        p.end()
-        label = QtWidgets.QLabel()
-        label.setPixmap(px)
-        label.setContentsMargins(1, 1, 1, 1)
-        labelName = QtWidgets.QLabel(grName)
-        hbox = QtWidgets.QHBoxLayout()
-        hbox.addWidget(labelName)
-        hbox.addWidget(label)
-        widget = QtWidgets.QWidget()
-        widget.setLayout(hbox)
-        act = QtWidgets.QWidgetAction(self.ui.histogram.gradient)
-        act.setDefaultWidget(widget)
-        act.triggered.connect(self.ui.histogram.gradient.contextMenuClicked)
-        act.name = grName
-
-        return act
-
-    def _setImageToView(self, img, mode: ViewMode, isFirstImage: bool):
-        pass
-
-    def clearTransformations(self):
-        self.isSomeTransformationOn = False
-        self.isSomeTransformationAlreadyAppliedToCurrentImg = False
-        self.currentActiveRotationTransformation = None
-        self.currentEffectiveRotationTransformation = None
-        self.currentActiveFlipTransformation = None
-        self.currentRotationDegrees = 0
-        self.settedImage = self.negativeImage
-        self._setImageToView(img = self.currentOriginalImageData, mode = self.currentViewMode, isFirstImage = False)
+        self.ui.optionsButton.clicked.connect(self._optionsButtonClicked)
+        self.ui.autoHistogramRangeRadioButton.clicked.connect(self._autoHistogramRangeRadioButtonClicked)
+        self.ui.autoRangeRadioButton.clicked.connect(self._autoRangeRadioButtonClicked)
+        self.ui.autoLevelsRadioButton.clicked.connect(self._autoLevelsRadioButtonClicked)

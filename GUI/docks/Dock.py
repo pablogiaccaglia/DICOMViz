@@ -4,57 +4,59 @@ from typing import List
 from PyQt6 import QtWidgets, QtCore
 from PyQt6.QtWidgets import QDockWidget, QListWidgetItem
 
+from GUI import windowSingleton
+
 
 class Dock(QDockWidget):
 
     def __init__(self, name, window):
-        super().__init__(window)
-        self.filesListWidget = QtWidgets.QWidget()
-        self.dockContents = QtWidgets.QWidget()
-        self.dockContents.setObjectName(name)
-        self.window = window
-        self.listView = QtWidgets.QListWidget(self.dockContents)
-        self.listView.itemSelectionChanged.connect(self.handleItemSelectionChange)
-        self.listView.itemSelectionChanged.connect(self.window.dicomHandler.handleGIFExporter)
-        self.listView.itemSelectionChanged.connect(partial(self.window.dicomHandler.handleDocksClicks, self))
-        self.verticalLayout = QtWidgets.QVBoxLayout(self.dockContents)
-        self.currentPosition = 0
+        super().__init__(windowSingleton.mainWindow)
+        self._filesListWidget = QtWidgets.QWidget()
+        self._dockContents = QtWidgets.QWidget()
+        self._dockContents.setObjectName(name)
+
+        self._listView = QtWidgets.QListWidget(self._dockContents)
+        self._listView.itemSelectionChanged.connect(self._handleItemSelectionChange)
+        self._listView.itemSelectionChanged.connect(window.dicomHandler.handleGIFExporter)
+        self._listView.itemSelectionChanged.connect(partial(window.dicomHandler.handleDocksClicks, self))
+        self._verticalLayout = QtWidgets.QVBoxLayout(self._dockContents)
+        self._currentPosition = 0
 
         self.setFeatures(QDockWidget.DockWidgetFeature.DockWidgetMovable)
 
         self.setMaximumSize(QtCore.QSize(524287, 524287))
         self.setObjectName("dockWidgetOf" + name)
-        self.filesListWidget.setObjectName(name)
+        self._filesListWidget.setObjectName(name)
 
-        self.verticalLayout.setObjectName("verticalLayoutOf" + name)
-        self.listView.setObjectName("listViewOf" + name)
-        self.verticalLayout.addWidget(self.listView)
-        self.setWidget(self.dockContents)
+        self._verticalLayout.setObjectName("verticalLayoutOf" + name)
+        self._listView.setObjectName("listViewOf" + name)
+        self._verticalLayout.addWidget(self._listView)
+        self.setWidget(self._dockContents)
 
-        self.filesList = []
+        self._filesList = []
 
-    def handleItemSelectionChange(self):
-        pass
-
-    def deselectItem(self):
+    def deselectItem(self) -> None:
         try:
-            self.listView.item(self.currentPosition).setSelected(False)
+            self._listView.item(self._currentPosition).setSelected(False)
         except Exception:
             pass
 
-    def loadFiles(self, files: List):
+    def loadFiles(self, files: List) -> None:
         pass
 
-    def setSelectedItem(self, index):
-        self.listView.item(index).setSelected(True)
-        self.currentPosition = index
+    def setSelectedItem(self, index) -> None:
+        self._listView.item(index).setSelected(True)
+        self._currentPosition = index
 
     def isSomethingSelected(self) -> bool:
-        return len(self.listView.selectedItems()) > 0
+        return len(self._listView.selectedItems()) > 0
 
     def getCurrentSelectedItem(self) -> QListWidgetItem:
-        return self.listView.selectedItems()[0]
+        return self._listView.selectedItems()[0]
 
-    def unselectCurrentSelected(self):
+    def unselectCurrentSelected(self) -> None:
         if self.isSomethingSelected():
             self.getCurrentSelectedItem().setSelected(False)
+
+    def _handleItemSelectionChange(self) -> None:
+        pass

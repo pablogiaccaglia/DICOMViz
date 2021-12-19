@@ -1,2 +1,1 @@
-from GUI import menus, graphics, containers
-from GUI import utils
+from GUI import menus, graphics, containers, windowSingleton, GUIMainWindow

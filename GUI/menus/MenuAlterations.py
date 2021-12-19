@@ -10,6 +10,8 @@ class MenuAlterations(AbstractMenu):
     def __init__(self, menuBar):
         super().__init__(menuBar, "menuAlterations")
 
+        self.window = menuBar.window
+
         self.__defineActions()
         self.__addActions()
         self.__retranslateUI()
@@ -27,14 +29,29 @@ class MenuAlterations(AbstractMenu):
             self.SEGMENTED_LUNGS = menuAlterations.actionSegmentedLungsMask
             self.SEGMENTED_LUNGS_W_INTERNAL = menuAlterations.actionSegmentedLungsMaskWInternal
 
-    def __selectViewModeMenuOption(self, viewModeOption, viewMode: ViewMode):
+    def disableOptions(self) -> None:
+        self.actionDefaultView.setEnabled(False)
+        self.actionLungsMask.setEnabled(False)
+        self.actionSegmentedLungsMask.setEnabled(False)
+        self.actionSegmentedLungsMaskWInternal.setEnabled(False)
+        self.actionNegative.setEnabled(False)
+
+    def toggleActions(self, value: bool, dicomContainer = None) -> None:
+        self.actionLungsMask.setEnabled(value)
+        self.actionSegmentedLungsMask.setEnabled(value)
+        self.actionSegmentedLungsMaskWInternal.setEnabled(value)
+
+    def enableNegativeImageAction(self) -> None:
+        self.actionNegative.setEnabled(True)
+
+    def __selectViewModeMenuOption(self, viewModeOption, viewMode: ViewMode) -> None:
         self.enableNegativeImageAction()
         self.selectedViewModeMenuOption.setEnabled(True)
         self.selectedViewModeMenuOption = viewModeOption
         self.selectedViewModeMenuOption.setDisabled(True)
-        self.menuBar.window.changeViewMode(viewMode)
+        self.window.changeViewMode(viewMode)
 
-    def __defineActions(self):
+    def __defineActions(self) -> None:
         self.actionDefaultView = QtWidgets.QWidgetAction(self.menuBar)
         self.actionDefaultView.setObjectName("actionDefaultView")
 
@@ -50,14 +67,14 @@ class MenuAlterations(AbstractMenu):
         self.actionNegative = QtWidgets.QWidgetAction(self.menuBar)
         self.actionNegative.setObjectName("actionNegative")
 
-    def __connectActions(self):
+    def __connectActions(self) -> None:
         self.actionDefaultView.triggered.connect(
-            partial(self.__selectViewModeMenuOption, self.viewModeMenuOptions.ORIGINAL,
-                    ViewMode.ORIGINAL))
+                partial(self.__selectViewModeMenuOption, self.viewModeMenuOptions.ORIGINAL,
+                        ViewMode.ORIGINAL))
 
         self.actionLungsMask.triggered.connect(
-            partial(self.__selectViewModeMenuOption, self.viewModeMenuOptions.LUNGS_MASK,
-                    ViewMode.LUNGS_MASK))
+                partial(self.__selectViewModeMenuOption, self.viewModeMenuOptions.LUNGS_MASK,
+                        ViewMode.LUNGS_MASK))
 
         self.actionSegmentedLungsMask.triggered.connect(
                 partial(self.__selectViewModeMenuOption, self.viewModeMenuOptions.SEGMENTED_LUNGS,
@@ -68,16 +85,16 @@ class MenuAlterations(AbstractMenu):
                         ViewMode.SEGMENTED_LUNGS_W_INTERNAL))
 
         self.actionNegative.triggered.connect(
-                partial(self.menuBar.window.changeViewMode, ViewMode.NEGATIVE))
+                partial(self.window.changeViewMode, ViewMode.NEGATIVE))
 
-    def __addActions(self):
+    def __addActions(self) -> None:
         self.addAction(self.actionDefaultView)
         self.addAction(self.actionNegative)
         self.addAction(self.actionLungsMask)
         self.addAction(self.actionSegmentedLungsMask)
         self.addAction(self.actionSegmentedLungsMaskWInternal)
 
-    def __retranslateUI(self):
+    def __retranslateUI(self) -> None:
         _translate = QtCore.QCoreApplication.translate
         self.setTitle(_translate("MainWindow", "Alterations"))
 
@@ -100,18 +117,3 @@ class MenuAlterations(AbstractMenu):
         self.actionSegmentedLungsMaskWInternal.setText(_translate("MainWindow", "Lungs Internal Structure"))
         self.actionSegmentedLungsMaskWInternal.setStatusTip(_translate("MainWindow", "Lungs Internal Structure"))
         self.actionSegmentedLungsMaskWInternal.setShortcut(_translate("MainWindow", "*"))
-
-    def disableOptions(self):
-        self.actionDefaultView.setEnabled(False)
-        self.actionLungsMask.setEnabled(False)
-        self.actionSegmentedLungsMask.setEnabled(False)
-        self.actionSegmentedLungsMaskWInternal.setEnabled(False)
-        self.actionNegative.setEnabled(False)
-
-    def toggleActions(self, value: bool, dicomContainer = None):
-        self.actionLungsMask.setEnabled(value)
-        self.actionSegmentedLungsMask.setEnabled(value)
-        self.actionSegmentedLungsMaskWInternal.setEnabled(value)
-
-    def enableNegativeImageAction(self):
-        self.actionNegative.setEnabled(True)

@@ -1,4 +1,5 @@
 import re
+from typing import Optional
 
 from PyQt6 import QtGui
 
@@ -10,7 +11,7 @@ class TagsContainer(QtGui.QStandardItemModel):
 
     """Container to manage Dicom file's tags in a list"""
 
-    def fillTags(self, dicomFile, columns, regex = None, maxValueSize = 256):
+    def fillTags(self, dicomFile, columns, regex = None, maxValueSize = 256) -> None:
 
         """Fill the TagContainer with the tags of the dicomFile"""
 
@@ -22,7 +23,7 @@ class TagsContainer(QtGui.QStandardItemModel):
         except:
             regex = ""  # no regex or bad pattern
 
-        def _elementToValue(element):
+        def _elementToValue(element) -> Optional[str]:
 
             """ Return the value in the element object. This can be a list of QStandardItem objects
                if element.VR == 'SQ', otherwise it is a string """
@@ -44,7 +45,7 @@ class TagsContainer(QtGui.QStandardItemModel):
 
             return value
 
-        def _buildContent(parent, dicomF):
+        def _buildContent(parent, dicomF) -> None:
 
             """ Add every element in the dicom file (dicomF) to the QStandardItem
                 parentNode object in a recursive way for all list elements. """
@@ -63,6 +64,7 @@ class TagsContainer(QtGui.QStandardItemModel):
                         value = value[:maxValueSize] + "..."
 
                     try:
+
                         value = value.decode("ascii")
                         if "\n" in value or "\r" in value:  # multiline text data should be shown as repr
                             value = repr(value)

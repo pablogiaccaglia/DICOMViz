@@ -5,7 +5,7 @@ from PyQt6 import QtWidgets, QtGui
 from PyQt6.QtCore import Qt, QTimer, qInstallMessageHandler
 from PyQt6.QtWidgets import QApplication
 
-from GUI.GUIMainWindow import GUIMainWindow
+from GUI import windowSingleton
 
 
 def sigint_handler(*args):
@@ -44,10 +44,8 @@ if __name__ == "__main__":
     icon = QtGui.QIcon('rounded-logo.png')
     app.setWindowIcon(icon)
 
-    # MainWindow = QtWidgets.QMainWindow()
-
-    ui = GUIMainWindow()
-    ui.start()
+    windowSingleton.buildMainWindowSingleton()
+    windowSingleton.mainWindow.start()
 
     signal.signal(signal.SIGINT, sigint_handler)
 

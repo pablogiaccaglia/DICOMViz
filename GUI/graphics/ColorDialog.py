@@ -1,50 +1,51 @@
-from PyQt6 import QtGui, QtWidgets, QtCore
+from PyQt6 import QtGui, QtWidgets
 from PyQt6.QtCore import Qt, pyqtSignal
 
 
-class ColorAction(QtGui.QAction):
+class ColorDialogAction(QtGui.QAction):
 
     colorChangedSignal = pyqtSignal(object)
 
     def __init__(self, name: str, fatherWidget, color = None):
-        super(ColorAction, self).__init__(text = name, parent = fatherWidget)
+        super(ColorDialogAction, self).__init__(text = name, parent = fatherWidget)
 
         self._color = None
         self._default = color
-        self.triggered.connect(self.onColorPicker)
-        self.fatherWidget = fatherWidget
-        self.dialog = QtWidgets.QColorDialog(self.fatherWidget)
+        self.triggered.connect(self._onColorPicker)
+        self._fatherWidget = fatherWidget
+        self._colorDialog = QtWidgets.QColorDialog(self._fatherWidget)
 
-        self.dialog.currentColorChanged.connect(self.currentColorC)
+        self._colorDialog.currentColorChanged.connect(self._currentColorChanged)
 
         # Set the initial/default state.
-        self.setColor(self._default)
+        self._color = self._default
 
-    def setColor(self, color):
+    @property
+    def color(self) -> str:
+        return self._color
+
+    @color.setter
+    def color(self, color) -> None:
         if color != self._color:
             self._color = color
             self.colorChangedSignal.emit(color)
 
-    @property
-    def color(self):
-        return self._color
+    def mousePressEvent(self, e) -> None:
+        if e.button() == Qt.MouseButton.RightButton:
+            self._color = self._default
 
-    def onColorPicker(self):
+        return super(ColorDialogAction, self).mousePressEvent(e)
+
+    def _currentColorChanged(self) -> None:
+        self.colorChangedSignal.emit(self._color)
+        self._color = self._colorDialog.currentColor().name()
+
+    def _onColorPicker(self) -> None:
 
         if self._color:
-            self.dialog.setCurrentColor(QtGui.QColor(self._color))
+            self._colorDialog.setCurrentColor(QtGui.QColor(self._color))
 
-        if self.dialog.show():
-            self.setColor(self.dialog.currentColor().name())
-
-    def mousePressEvent(self, e):
-        if e.button() == Qt.MouseButton.RightButton:
-            self.setColor(self._default)
-
-        return super(ColorAction, self).mousePressEvent(e)
-
-    def currentColorC(self):
-        self.colorChangedSignal.emit(self._color)
-        self.setColor(self.dialog.currentColor().name())
+        if self._colorDialog.show():
+            self._color = self._colorDialog.currentColor().name()
 
 

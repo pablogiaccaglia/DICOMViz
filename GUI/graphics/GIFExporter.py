@@ -40,7 +40,7 @@ class GIFExporter(Exporter, QWidget):
 
         self.params.param('width').sigValueChanged.connect(self.widthChanged)
         self.params.param('height').sigValueChanged.connect(self.heightChanged)
-        # self.params.param('speed').sigValueChanged.connect(self.speedChanged)
+        self.params.param('speed').sigValueChanged.connect(self.speedChanged)
         self.fileName = None
 
     @classmethod
@@ -48,32 +48,31 @@ class GIFExporter(Exporter, QWidget):
         GIFExporter.GIFData = gifData
 
     @classmethod
-    def unregister(cls):
+    def unregister(cls) -> None:
         try:
             Exporter.Exporters.remove(cls)
         except ValueError:
             pass  # do nothing! Thread safe, better than an if check
 
-    def speedChanged(self):
-        # self.params.param('speed').setValue()
-        pass
+    def speedChanged(self) -> None:
+        self.params.param('speed').setValue()
 
-    def widthChanged(self):
+    def widthChanged(self) -> None:
         sr = self.getSourceRect()
         ar = float(sr.height()) / sr.width()
         self.height = int(self.params['width'] * ar)
         self.params.param('height').setValue(self.height, blockSignal = self.heightChanged)
 
-    def heightChanged(self):
+    def heightChanged(self) -> None:
         sr = self.getSourceRect()
         ar = float(sr.width()) / sr.height()
         self.width = int(self.params['height'] * ar)
         self.params.param('width').setValue(self.width, blockSignal = self.widthChanged)
 
-    def parameters(self):
+    def parameters(self) -> Parameter:
         return self.params
 
-    def export(self, fileName = None, toBytes = False, copy = False):
+    def export(self, fileName = None, toBytes = False, copy = False) -> None:
         if fileName is None and not toBytes and not copy:
             self.fileSaveDialog(filter = ['*.gif'])
             return
@@ -92,6 +91,6 @@ class GIFExporter(Exporter, QWidget):
         self.fileName = fileName
         self.exportGIFSignal.emit()
 
-    def saveGIF(self):
+    def saveGIF(self) -> None:
         print(str(self.fileName))
         imageio.mimsave(self.fileName, GIFExporter.GIFData, duration = self.speed)

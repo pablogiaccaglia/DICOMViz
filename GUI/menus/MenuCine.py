@@ -1,7 +1,4 @@
-from functools import partial
-
 from PyQt6 import QtCore, QtWidgets
-from PyQt6.QtWidgets import QMenu
 
 from GUI.menus.AbstractMenu import AbstractMenu
 
@@ -11,49 +8,50 @@ class MenuCine(AbstractMenu):
     def __init__(self, menuBar):
         super().__init__(menuBar, "menuCine")
 
+        self.window = menuBar.window
+
         self._translate = QtCore.QCoreApplication.translate
-        self.__defineActions()
-        self.__addActions()
-        self.__retranslateUI()
-        self.actionAnimateSeries.setEnabled(False)
+        self._defineActions()
+        self._addActions()
+        self._retranslateUI()
+        self._actionAnimateSeries.setEnabled(False)
 
-    def toggleActions(self, value: bool, dicomContainer = None):
+    def toggleActions(self, value: bool, dicomContainer = None) -> None:
         if value and self.menuBar.window.dicomHandler.isSeriesImageSelected():
-            self.actionAnimateSeries.setEnabled(value)
+            self._actionAnimateSeries.setEnabled(value)
         if not value:
-            self.actionAnimateSeries.setEnabled(value)
-        pass
+            self._actionAnimateSeries.setEnabled(value)
 
-    def __defineActions(self):
-        self.actionAnimateSeries = QtWidgets.QWidgetAction(self.menuBar)
-        self.actionAnimateSeries.setObjectName("actionAnimateSeries")
-        self.actionAnimateSeries.triggered.connect(self.__toggleGifHandlerToGraphicsView)
+    def changeAnimateActionText(self, isAnimationOn: bool) -> None:
 
-    def __addActions(self):
-        self.addAction(self.actionAnimateSeries)
+        if isAnimationOn:
+            self._actionAnimateSeries.setText(self._translate("MainWindow", "Stop Animation"))
+        else:
+            self._actionAnimateSeries.setText(self._translate("MainWindow", "Animate"))
 
-    def __retranslateUI(self):
+    def _defineActions(self) -> None:
+        self._actionAnimateSeries = QtWidgets.QWidgetAction(self.menuBar)
+        self._actionAnimateSeries.setObjectName("actionAnimateSeries")
+        self._actionAnimateSeries.triggered.connect(self.toggleGifHandlerToGraphicsView)
+
+    def _addActions(self) -> None:
+        self.addAction(self._actionAnimateSeries)
+
+    def _retranslateUI(self) -> None:
 
         self.setTitle(self._translate("MainWindow", "Cine"))
 
-        self.actionAnimateSeries.setText(self._translate("MainWindow", "Animate"))
-        self.actionAnimateSeries.setStatusTip(self._translate("MainWindow", "Animate series "))
-        self.actionAnimateSeries.setShortcut(self._translate("MainWindow", "Ctrl+'"))
+        self._actionAnimateSeries.setText(self._translate("MainWindow", "Animate"))
+        self._actionAnimateSeries.setStatusTip(self._translate("MainWindow", "Animate series "))
+        self._actionAnimateSeries.setShortcut(self._translate("MainWindow", "Ctrl+'"))
 
-    def changeAnimateActionText(self, isAnimationOn: bool):
+    def toggleGifHandlerToGraphicsView(self) -> None:
 
-        if isAnimationOn:
-            self.actionAnimateSeries.setText(self._translate("MainWindow", "Stop Animation"))
-        else:
-            self.actionAnimateSeries.setText(self._translate("MainWindow", "Animate"))
-
-    def __toggleGifHandlerToGraphicsView(self):
-
-        isAnimationOn = self.menuBar.window.graphicsView.isAnimationOn()
+        isAnimationOn = self.window.graphicsView.isAnimationOn()
 
         if isAnimationOn:
-            self.menuBar.window.graphicsView.stopGifHandler()
+            self.window.graphicsView.stopGifHandler()
         else:
-            self.menuBar.window.graphicsView.addGifHandler()
+            self.window.graphicsView.addGifHandler()
 
-        self.changeAnimateActionText(isAnimationOn = self.menuBar.window.graphicsView.isAnimationOn())
+        self.changeAnimateActionText(isAnimationOn = self.window.graphicsView.isAnimationOn())

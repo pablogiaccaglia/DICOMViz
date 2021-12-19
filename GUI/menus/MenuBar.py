@@ -1,56 +1,44 @@
-from typing import List
-
 from PyQt6 import QtCore
 from PyQt6.QtGui import QAction
 from PyQt6.QtWidgets import QMenuBar
 
-# from GUI.menus import MenuAdjustments
-from GUI.menus import MenuAlterations
-# from GUI.menus import MenuAnnotations
-from GUI.menus import MenuCine
-from GUI.menus import MenuExport
-from GUI.menus import MenuFiles
-from GUI.menus import MenuTransformations
-from GUI.menus import MenuZoom
+from GUI.menus.MenuAlterations import MenuAlterations
+from GUI.menus.MenuCine import MenuCine
+from GUI.menus.MenuExport import MenuExport
+from GUI.menus.MenuFiles import MenuFiles
+from GUI.menus.MenuTransformations import MenuTransformations
+from GUI.menus.MenuZoom import MenuZoom
 
 
 class MenuBar(QMenuBar):
     def __init__(self, window):
         super().__init__(window)
-        self.window = window
         self.setObjectName("menubar")
+        self.window = window
         self.__initMenuBar()
         self.menus = [self.menuFiles,
-                      # self.menuAdjustments,
                       self.menuExport,
                       self.menuCine,
                       self.menuZoom,
-                      # self.menuAnnotations,
                       self.menuTransformations,
                       self.menuAlterations]
-        self.isDarkTheme = True
+        self._isDarkTheme = True
 
-    def __initMenuBar(self):
+    def __initMenuBar(self) -> None:
 
         self.setGeometry(QtCore.QRect(0, 0, 925, 22))
 
-        self.menuFiles = MenuFiles(self)
+        self.menuFiles = MenuFiles(menuBar = self)
         self.addAction(self.menuFiles.menuAction())
 
-        self.menuExport = MenuExport(self)
+        self.menuExport = MenuExport(menuBar = self)
         self.addAction(self.menuExport.menuAction())
 
-        # self.menuAnnotations = MenuAnnotations(self)
-        # self.addAction(self.menuAnnotations.menuAction())
-
-        self.menuZoom = MenuZoom(self)
+        self.menuZoom = MenuZoom(menuBar = self)
         self.addAction(self.menuZoom.menuAction())
 
-        self.menuAlterations = MenuAlterations(self)
+        self.menuAlterations = MenuAlterations(menuBar = self)
         self.addAction(self.menuAlterations.menuAction())
-
-        # self.menuAdjustments = MenuAdjustments(self)
-        # self.addAction(self.menuAdjustments.menuAction())
 
         self.menuTransformations = MenuTransformations(self)
         self.addAction(self.menuTransformations.menuAction())
@@ -65,16 +53,16 @@ class MenuBar(QMenuBar):
         self.__retranslateUI()
         QtCore.QMetaObject.connectSlotsByName(self)
 
-    def __retranslateUI(self):
+    def __retranslateUI(self) -> None:
         _translate = QtCore.QCoreApplication.translate
         self.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.actionStyle.setText(_translate("MainWindow", "Light Theme"))
 
-    def updateStylesheet(self):
-        self.isDarkTheme = not self.isDarkTheme
+    def updateStylesheet(self) -> None:
+        self._isDarkTheme = not self._isDarkTheme
 
         _translate = QtCore.QCoreApplication.translate
-        if self.isDarkTheme:
+        if self._isDarkTheme:
             self.actionStyle.setText(_translate("MainWindow", "Light Theme"))
         else:
             self.actionStyle.setText(_translate("MainWindow", "Dark Theme"))
@@ -82,9 +70,9 @@ class MenuBar(QMenuBar):
         self.window.updateStylesheet()
 
     @property
-    def menus(self) -> List:
+    def menus(self) -> list:
         return self._menus
 
     @menus.setter
-    def menus(self, value):
+    def menus(self, value) -> None:
         self._menus = value

@@ -1,6 +1,8 @@
+from typing import Optional
+
 import numpy as np
+from numpy import ndarray
 import pydicom
-from pydicom import dicomio
 
 from DICOM import DicomAbstractContainer
 from DICOM.DicomAbstractContainer import ViewMode
@@ -11,42 +13,70 @@ class DicomSeries(DicomAbstractContainer.DicomAbstractContainerClass):
     """
     This type represents a Dicom series as a list of Dicom files sharing a series UID. The assumption is that the images
     of a series were captured together and so will always have a number of fields in common, such as patient name, so
-    Dicoms should be organized by series. This type will also cache loaded Dicom tags and images
+    Dicoms should be organized by series.
     """
 
     def __init__(self, seriesID, rootDir):
 
         super().__init__()
-        self.seriesID = seriesID  # ID of the series or ???
-        self.rootDir = rootDir  # directory Dicoms were loaded from, files for this series may be in subdirectories
-        self.filenames = []  # list of filenames for the Dicom associated with this series
-        self.dicomFilesList = {}
-        self.sortedFileNamesList = []  # list of filenames but sorted according to SliceLocation field
-        self.dicomFilesIndexesDict = {}
-        self.dicomFilesPathsDicts = {}
-        self.loadTags = []  # loaded abbreviated tag->(name,value) maps, 1 for each of self.filenames
-        self.imgCache = {}  # image data cache, mapping index in self.filenames to arrays or None for non-images files
-        self.tagCache = {}  # tag values cache, mapping index in self.filenames to OrderedDict of tag->(name,value) maps
-        self._size = 0
-        self.pixelsDataTuple = None
-        self.dicomFileIndexesCache = []
-        self.supportDcmFiles = None
-        self.slice_thickness = None
+        self._seriesID = seriesID  # ID of the series or ???
+        self._rootDirectory = rootDir  # directory Dicoms were loaded from, files for this series may be in subdirectories
+        self._filenames = []  # list of filenames for the Dicom associated with this series
+        self._sortedFileNamesList = []  # list of filenames but sorted according to SliceLocation field
+        self._dicomFilesIndexesDict = {}
+        self._dicomFilesPathsDicts = {}
+        self._loadedTagsTuplesList = []  # loaded abbreviated tag->(name,value) maps, 1 for each of self.filenames
+        self._imgCache = {}  # image data cache, mapping index in self.filenames to arrays or None for non-images files
+        self._tagCache = {}  # tag values cache, mapping index in self.filenames to OrderedDict of tag->(name,value) maps
+        self._seriesSize = 0
+        self._seriesPixelsDataTuple = None
+        self._dicomFileIndexesCache = []
+        self._supportDcmFiles = None
+        self._sliceThickness = None
 
     @property
-    def size(self):
-        return self._size
+    def seriesSize(self) -> int:
+        return self._seriesSize
 
-    def addFile(self, filename, loadTag):
+    @property
+    def seriesID(self) -> int:
+        return self._seriesID
+
+    @property
+    def rootDirectory(self) -> str:
+        return self._rootDirectory
+
+    @property
+    def loadedTagsTuplesList(self) -> list[tuple]:
+        return self._loadedTagsTuplesList
+
+    @property
+    def sortedFileNamesList(self) -> list[str]:
+        return self._sortedFileNamesList
+
+    @property
+    def dicomFilesIndexesDict(self) -> dict:
+        return self._dicomFilesIndexesDict
+
+    @property
+    def dicomFilesPathsDict(self) -> dict:
+        return self._dicomFilesPathsDicts
+
+    @property
+    def seriesSlicesThickness(self):
+        return self._sliceThickness
+
+    def addFile(self, filename, loadTag) -> None:
         """Add a filename and abbreviated tag map to the series."""
-        self.filenames.append(filename)
-        self.loadTags.append(loadTag)
+        self._filenames.append(filename)
+        self._loadedTagsTuplesList.append(loadTag)
+        self._seriesSize = self._seriesSize + 1
 
-    def getExtraTagValues(self):
+    def getExtraTagValues(self) -> dict:
         """Return the extra tag values calculated from the series tag info stored in self.filenames."""
         start, interval, numTimes = self.getTimestepSpec()
         extraVals = {
-            "NumImages":    len(self.filenames),
+            "NumImages":    len(self._filenames),
             "TimestepSpec": "start: %i, interval: %i, # Steps: %i"
                             % (start, interval, numTimes),
             "StartTime":    start,
@@ -56,12 +86,12 @@ class DicomSeries(DicomAbstractContainer.DicomAbstractContainerClass):
 
         return extraVals
 
-    def getTagValues(self, names, index = 0):
+    def getTagValues(self, names, index = 0) -> tuple:
         """Get the tag values for tag names listed in `names' for image at the given index."""
-        if not self.filenames:
+        if not self._filenames:
             return ()
 
-        if self.pixelsDataTuple is None:
+        if self._seriesPixelsDataTuple is None:
             dcm = self.getDicomRawImage(index = index).getDicomFile()
 
         else:
@@ -69,36 +99,33 @@ class DicomSeries(DicomAbstractContainer.DicomAbstractContainerClass):
 
         extraVals = self.getExtraTagValues()
 
-        # TODO: kludge? More general solution of telling series apart
-        # dcm.SeriesDescription=dcm.get('SeriesDescription',dcm.get('SeriesInstanceUID','???'))
-
         return tuple(str(dcm.get(n, extraVals.get(n, ""))) for n in names)
 
-    def getPixelData(self, index, mode: ViewMode = ViewMode.ORIGINAL):
+    def getPixelData(self, index, mode: ViewMode = ViewMode.ORIGINAL) -> ndarray:
         """Get the pixel data array for file at position `index` in self.filenames, or None if no pixel data."""
 
         return self.getDicomFile(index).getPixelData(mode)
 
-    def computeDicomFile(self, index):
+    def computeDicomFile(self, index) -> None:
 
-        currentSlice = self.supportDcmFiles[index]
-        currentSlice.SliceThickness = self.slice_thickness
-        originalImg = self.pixelsDataTuple[index]
+        currentSlice = self._supportDcmFiles[index]
+        currentSlice.SliceThickness = self._sliceThickness
+        originalImg = self._seriesPixelsDataTuple[index]
 
-        dcmFile = DicomFileWrapper(fileName = self.sortedFileNamesList[index], dicomData = currentSlice,
+        dcmFile = DicomFileWrapper(fileName = self._sortedFileNamesList[index], dicomData = currentSlice,
                                    originalImg = originalImg)
-        self.dicomFilesList[index] = dcmFile
-        self.dicomFilesIndexesDict[index] = dcmFile
 
-    def loadPixelDataTuple(self):
-        if self.pixelsDataTuple is None:
-            self.pixelsDataTuple = self.get_pixels_hu(self.supportDcmFiles)
+        self._dicomFilesIndexesDict[index] = dcmFile
 
-    def getPixelDataList(self, mode: ViewMode = ViewMode.ORIGINAL):
+    def loadPixelDataTuple(self) -> None:
+        if self._seriesPixelsDataTuple is None:
+            self._seriesPixelsDataTuple = self.getPixelsArray(self._supportDcmFiles)
+
+    def getPixelDataList(self, mode: ViewMode = ViewMode.ORIGINAL) -> list:
 
         pixelData = []
 
-        for index in range(0, self._size):
+        for index in range(0, self._seriesSize):
             data = self.getPixelData(index, mode)[0, :, :]
             pixelData.append(np.uint8(data))
 
@@ -106,39 +133,39 @@ class DicomSeries(DicomAbstractContainer.DicomAbstractContainerClass):
 
     def getDicomFile(self, index):
 
-        if index not in self.dicomFileIndexesCache:
+        if index not in self._dicomFileIndexesCache:
             self.computeDicomFile(index = index)
-            self.dicomFileIndexesCache.append(index)
+            self._dicomFileIndexesCache.append(index)
 
-        return self.dicomFilesList[index]
+        return self._dicomFilesIndexesDict[index]
 
-    def getDicomRawImage(self, index: int):
-        if self.pixelsDataTuple is None:
-            return DicomFileWrapper(fileName = self.sortedFileNamesList[index])
+    def getDicomRawImage(self, index: int) -> DicomFileWrapper:
+        if self._seriesPixelsDataTuple is None:
+            return DicomFileWrapper(fileName = self._sortedFileNamesList[index])
         else:
             return self.getDicomFile(index = 0)
 
-    def getPixelDataFromPath(self, path, mode: ViewMode = ViewMode.ORIGINAL):
+    def getPixelDataFromPath(self, path, mode: ViewMode = ViewMode.ORIGINAL) -> Optional[ndarray]:
         try:
             index = self.getIndexFromPath(path)
             return self.getPixelData(index, mode)
         except:
             return None
 
-    def getIndexFromPath(self, path):
+    def getIndexFromPath(self, path) -> Optional[int]:
         try:
-            return self.dicomFilesPathsDicts.get(path)
+            return self._dicomFilesPathsDicts.get(path)
         except:
             return None
 
-    def addSeries(self, series):
+    def addSeries(self, series) -> None:
         """Add every loaded dcm file from DicomSeries object `series` into this series."""
-        for f, loadTag in zip(series.filenames, series.loadTags):  # TODO FIX THIS
+        for f, loadTag in zip(series.sortedFileNames, series.loadedTagsTuplesList):  # TODO FIX THIS
             self.addFile(f, loadTag)
 
-    def getTimestepSpec(self, tag = "TriggerTime"):
+    def getTimestepSpec(self, tag = "TriggerTime") -> tuple:
         """Returns (start time, interval, num timesteps) triple."""
-        times = sorted(set(int(loadTag.get(tag, 0)) for loadTag in self.loadTags))
+        times = sorted(set(int(loadTag.get(tag, 0)) for loadTag in self.loadedTagsTuplesList))
 
         if not times or times == [0]:
             return 0.0, 0.0, 0.0
@@ -149,35 +176,35 @@ class DicomSeries(DicomAbstractContainer.DicomAbstractContainerClass):
             avgSpan = np.average([b - a for a, b in zip(times, times[1:])])
             return times[0], avgSpan, len(times)
 
-    def computeSliceThickness(self):
-        if self.slice_thickness is None:
+    def computeSliceThickness(self) -> None:
+        if self._sliceThickness is None:
             try:
-                self.slice_thickness = np.abs(
-                        self.supportDcmFiles[0].ImagePositionPatient[2] - self.supportDcmFiles[1].ImagePositionPatient[2])
+                self._sliceThickness = np.abs(
+                        self._supportDcmFiles[0].ImagePositionPatient[2] - self._supportDcmFiles[1].ImagePositionPatient[2])
             except:
-                self.slice_thickness = np.abs(self.supportDcmFiles[0].SliceLocation - self.supportDcmFiles[1].SliceLocation)
+                self._sliceThickness = np.abs(self._supportDcmFiles[0].SliceLocation - self._supportDcmFiles[1].SliceLocation)
 
-    def sortSeries(self):
+    def sortSeries(self) -> None:
 
-        self.supportDcmFiles = []
-        # skip files with no SliceLocation (eg scout views)
+        self._supportDcmFiles = []
+        # skip files with no SliceLocation
 
-        for i in range(len(self.filenames)):
-            dcm = pydicom.dcmread(self.filenames[i])
+        for i in range(len(self._filenames)):
+            dcm = pydicom.dcmread(self._filenames[i])
             if "SliceLocation" in dcm:
-                filename = self.filenames[i]
-                self.supportDcmFiles.append((dcm, filename))
+                filename = self._filenames[i]
+                self._supportDcmFiles.append((dcm, filename))
 
-        # ensure they are in the correct order
-        self.supportDcmFiles = sorted(self.supportDcmFiles, key = lambda s: s[0].SliceLocation, reverse = True)
+        # sort files according to SliceLocation field
+        self._supportDcmFiles = sorted(self._supportDcmFiles, key = lambda s: s[0].SliceLocation, reverse = True)
 
         cleanSupport = []
 
-        for i in range(len(self.supportDcmFiles)):
-            self.sortedFileNamesList.append(self.supportDcmFiles[i][1])
-            cleanSupport.append(self.supportDcmFiles[i][0])
-            self.dicomFilesPathsDicts[self.sortedFileNamesList[i]] = i
+        for i in range(len(self._supportDcmFiles)):
+            self._sortedFileNamesList.append(self._supportDcmFiles[i][1])
+            cleanSupport.append(self._supportDcmFiles[i][0])
+            self._dicomFilesPathsDicts[self._sortedFileNamesList[i]] = i
 
-        self.supportDcmFiles = cleanSupport
+        self._supportDcmFiles = cleanSupport
 
-        self._size = len(self.supportDcmFiles)
+        self._seriesSize = len(self._supportDcmFiles)

@@ -2,6 +2,7 @@ import os
 from typing import List
 from PyQt6 import QtWidgets
 from DICOM.DicomAbstractContainer import ViewMode
+from GUI import windowSingleton
 from GUI.docks.Dock import Dock
 
 
@@ -9,59 +10,61 @@ class DockSeries(Dock):
 
     def __init__(self, window):
         super().__init__("DockSeries", window)
-        self.currentSeriesObject = None
+        self._currentSeriesObject = None
         self.currentSelectedSeriesIndex = 0
-        self.scrollBarPos = 50
+        self._scrollBarPos = 50
 
-    def loadFiles(self, files: List):
+    def loadFiles(self, files: List) -> None:
 
-        self.listView.clear()
-        self.filesList = files
+        self._listView.clear()
+        self._filesList = files
 
-        if self.filesList:
-            self.currentSelectedSeriesIndex = self.window.dicomHandler.currSelectedSeriesIndex
-            self.currentSeriesObject = self.window.dicomHandler.currentSeriesObject
-            self.window.dicomHandler.currentDicomObject = self.currentSeriesObject
-            self.window.dicomHandler.setImageToView(self.currentSeriesObject.getDicomRawImage(index = 0),
-                                                    viewMode = ViewMode.ORIGINAL, isFirstImage = True)
-            self.currentSeriesObject.computeSliceThickness()
-            self.currentSeriesObject.loadPixelDataTuple()
+        if self._filesList:
+            self.currentSelectedSeriesIndex = windowSingleton.mainWindow.dicomHandler.currSelectedSeriesIndex
+            self._currentSeriesObject = windowSingleton.mainWindow.dicomHandler.currentSeriesObject
+            windowSingleton.mainWindow.dicomHandler.currentDicomFileObject = self._currentSeriesObject
+            windowSingleton.mainWindow.dicomHandler.setImageToView(self._currentSeriesObject.getDicomRawImage(index = 0),
+                                                                   viewMode = ViewMode.ORIGINAL, isFirstImage = True)
+            self._currentSeriesObject.computeSliceThickness()
+            self._currentSeriesObject.loadPixelDataTuple()
 
-        for fileName in self.filesList:
+        for fileName in self._filesList:
             item = QtWidgets.QListWidgetItem(os.path.basename(fileName))
             item.setToolTip(fileName)
-            self.listView.addItem(item)
+            self._listView.addItem(item)
 
         self.setSelectedItem(index = 0)
 
-        self.listView.setMinimumWidth(self.listView.sizeHintForColumn(0) + 20)
+        self._listView.setMinimumWidth(self._listView.sizeHintForColumn(0) + 20)
 
-    def handleItemSelectionChange(self):
+    def setSelectedItem(self, index) -> None:
+        super().setSelectedItem(index)
+        self._currentRowChanged()
+
+    def removeSeriesFiles(self) -> None:
+        self._currentSeriesObject = None
+        self._scrollBarPos = 50
+        self._listView.clear()
+        self._filesList = None
+
+    def _currentRowChanged(self) -> None:
+        self._listView.verticalScrollBar().setValue(self._scrollBarPos)
+        self._scrollBarPos = self._scrollBarPos + 16.5
+
+    def _handleItemSelectionChange(self) -> None:
 
         try:
-            if not len(self.listView.selectedItems()):
-                self.window.graphicsView.setImageToView(None, None, None)
+            if not len(self._listView.selectedItems()):
+                windowSingleton.mainWindow.graphicsView.setImageToView(None, None, None)
             else:
-                self.window.dicomHandler.currentDicomObject = self.currentSeriesObject
-                self.window.dicomHandler.toggleMenuOptions(True)
+                windowSingleton.mainWindow.dicomHandler.currentDicomFileObject = self._currentSeriesObject
+                windowSingleton.mainWindow.dicomHandler.toggleMenuOptions(True)
                 item = self.getCurrentSelectedItem()
                 filename = str(item.toolTip())
-                self.currentPosition = self.currentSeriesObject.getIndexFromPath(filename)
-                self.window.dicomHandler.setImageToView(self.currentSeriesObject.getDicomFile(self.currentPosition),
-                                                        self.window.dicomHandler.currentViewMode, isFirstImage = False)
+                self.currentPosition = self._currentSeriesObject.getIndexFromPath(filename)
+                windowSingleton.mainWindow.dicomHandler.setImageToView(
+                    self._currentSeriesObject.getDicomFile(self.currentPosition),
+                    windowSingleton.mainWindow.dicomHandler.currentViewMode,
+                    isFirstImage = False)
         except:
             pass
-
-    def setSelectedItem(self, index):
-        super().setSelectedItem(index)
-        self.currentRowChanged()
-
-    def currentRowChanged(self):
-        self.listView.verticalScrollBar().setValue(self.scrollBarPos)
-        self.scrollBarPos = self.scrollBarPos + 16.5
-
-    def removeSeriesFiles(self):
-        self.currentSeriesObject = None
-        self.scrollBarPos = 50
-        self.listView.clear()
-        self.filesList = None

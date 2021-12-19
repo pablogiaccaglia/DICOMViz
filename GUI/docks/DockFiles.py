@@ -1,9 +1,9 @@
 import os
 from typing import List
 from PyQt6 import QtWidgets
-from PyQt6.QtCore import QModelIndex
 
 from DICOM.DicomAbstractContainer import ViewMode
+from GUI import windowSingleton
 from GUI.docks.Dock import Dock
 
 
@@ -12,34 +12,34 @@ class DockFiles(Dock):
     def __init__(self, window):
         super().__init__("DockFiles", window)
 
-    def loadFiles(self, files: List):
+    def loadFiles(self, files: List) -> None:
 
         dicomFileObject = files[0]
-        self.listView.clear()
-        self.filesList.append(dicomFileObject.filename)
-        self.currentPosition = len(self.filesList) - 1
+        self._listView.clear()
+        self._filesList.append(dicomFileObject.filename)
+        self._currentPosition = len(self._filesList) - 1
 
-        for fileName in self.filesList:
+        for fileName in self._filesList:
             item = QtWidgets.QListWidgetItem(os.path.basename(fileName))
             item.setToolTip(fileName)
-            self.listView.addItem(item)
+            self._listView.addItem(item)
 
-        self.listView.setMinimumWidth(self.listView.sizeHintForColumn(0) + 20)
+        self._listView.setMinimumWidth(self._listView.sizeHintForColumn(0) + 20)
 
-        if self.filesList:
-            self.window.dicomHandler.setImageToView(dicomFileObject, viewMode = ViewMode.ORIGINAL, isFirstImage = True)
-            self.setSelectedItem(self.currentPosition)
+        if self._filesList:
+            windowSingleton.mainWindow.dicomHandler.setImageToView(dicomFileObject, viewMode = ViewMode.ORIGINAL, isFirstImage = True)
+            self.setSelectedItem(self._currentPosition)
 
-    def handleItemSelectionChange(self):
-        if not len(self.listView.selectedItems()):
-            self.window.graphicsView.setImageToView(None, None, None)
+    def _handleItemSelectionChange(self) -> None:
+        if not len(self._listView.selectedItems()):
+            windowSingleton.mainWindow.graphicsView.setImageToView(None, None, None)
         else:
 
             item = self.getCurrentSelectedItem()
             filename = str(item.toolTip())
-            selectedDicomFileObject = self.window.dicomHandler.srcDicomFileObjectsDict[filename]
-            self.window.dicomHandler.currentDicomObject = selectedDicomFileObject
-            self.window.dicomHandler.toggleMenuOptions(True)
+            selectedDicomFileObject = windowSingleton.mainWindow.dicomHandler.srcDicomFileObjectsDict[filename]
+            windowSingleton.mainWindow.dicomHandler.currentDicomFileObject = selectedDicomFileObject
+            windowSingleton.mainWindow.dicomHandler.toggleMenuOptions(True)
 
-            self.window.dicomHandler.setImageToView(selectedDicomFileObject, self.window.dicomHandler.currentViewMode, isFirstImage = False)
-            self.currentPosition = self.listView.indexFromItem(item).column()
+            windowSingleton.mainWindow.dicomHandler.setImageToView(selectedDicomFileObject, windowSingleton.mainWindow.dicomHandler.currentViewMode, isFirstImage = False)
+            self.currentPosition = self._listView.indexFromItem(item).column()

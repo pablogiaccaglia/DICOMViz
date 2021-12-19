@@ -1,8 +1,15 @@
+from typing import Optional
+from typing import Union
+
 import pydicom
 import os
 
+from pydicom import FileDataset
+from pydicom.dicomdir import DicomDir
+
 from DICOM.DicomAbstractContainer import DicomAbstractContainerClass, ViewMode
 import numpy
+from numpy import ndarray
 
 from alterations import utils
 
@@ -11,93 +18,129 @@ class DicomFileWrapper(DicomAbstractContainerClass):
 
     def __init__(self, fileName, dicomData = None, dicomMasks = None, originalImg = None, segmentedLungsImg = None):
         super().__init__()
-        self.rootDir = os.path.dirname(
+
+        self._rootDir = None
+        self._dicomData = None
+        self._originalImgNpArray = None
+        self._dicomMasks = None
+        self._segmentedLungsImg = None
+        self._loadTag = None
+        self._lungsMaskImg = None
+        self._modes = None
+
+        self._setupFileWrapper(fileName = fileName,
+                               dicomData = dicomData,
+                               dicomMasks = dicomMasks,
+                               originalImg = originalImg,
+                               segmentedLungsImg = segmentedLungsImg)
+
+    @property
+    def rootDirectory(self) -> str:
+        return self._rootDir
+
+    @property
+    def dicomData(self) -> Union[FileDataset, DicomDir]:
+        return self._dicomData
+
+    @property
+    def originalImgNumpyArray(self) -> ndarray:
+        return self._originalImgNpArray
+
+    @property
+    def dicomMasks(self) -> tuple:
+        return self._dicomMasks
+
+    @property
+    def segmentedLungsImage(self) -> ndarray:
+        return self._segmentedLungsImg
+
+    @property
+    def segmentedLungsImg(self) -> ndarray:
+        return self._segmentedLungsImg
+
+    @property
+    def viewModes(self) -> dict:
+        return self._modes
+
+    def _setupFileWrapper(self, fileName,
+                          dicomData = None,
+                          dicomMasks = None,
+                          originalImg = None,
+                          segmentedLungsImg = None):
+
+        self._rootDir = os.path.dirname(
                 fileName)  # directory Dicoms were loaded from, files for this series may be in subdirectories
-        self.filename = fileName  # DicomFile Object associated file path
+        self._filename = fileName  # DicomFile Object associated file path
 
         if dicomData is None:
-            self.dicomData = pydicom.dcmread(self.filename)
+            self._dicomData = pydicom.dcmread(self._filename)
         else:
-            self.dicomData = dicomData
+            self._dicomData = dicomData
 
         if originalImg is None:
-            self.originalImgNpArray = self.get_pixels_hu([self.dicomData])
+            self._originalImgNpArray = self.getPixelsArray([self._dicomData])
         else:
-            self.originalImgNpArray = numpy.array([originalImg], numpy.int16)
+            self._originalImgNpArray = numpy.array([originalImg], numpy.int16)
 
         if dicomMasks is None:
             try:  # TODO HANDLE THIS FOR RGB
-                self.dicomMasks = utils.getDicomMasks(self.originalImgNpArray, -70)
+                self._dicomMasks = utils.getDicomMasks(self._originalImgNpArray, -70)
             except:
-                self.dicomMasks = None
+                self._dicomMasks = None
                 pass
         else:
-            self.dicomMasks = dicomMasks
+            self._dicomMasks = dicomMasks
 
-        if segmentedLungsImg is None and self.dicomMasks is not None:
-            self.segmentedLungsImg = utils.getSegmentedLungPixels(self.originalImgNpArray,
-                                                                  self.dicomMasks.segmentedLungsFill)
+        if segmentedLungsImg is None and self._dicomMasks is not None:
+            self._segmentedLungsImg = utils.getSegmentedLungPixels(self._originalImgNpArray,
+                                                                   self._dicomMasks.segmentedLungsFill)
         else:
-            self.segmentedLungsImg = segmentedLungsImg
+            self._segmentedLungsImg = segmentedLungsImg
 
-        self.loadTag = ("", "")  # loaded abbreviated tag->(name,value)
+        self._loadTag = ("", "")  # loaded abbreviated tag->(name,value)
 
-        val = self.dicomMasks.segmentedLungsFill if self.dicomMasks is not None else None
+        self._lungsMaskImg = self._dicomMasks.segmentedLungsFill if self._dicomMasks is not None else None
 
-        self.modes = {
-            ViewMode.ORIGINAL:                   self.originalImgNpArray,
-            ViewMode.LUNGS_MASK:                 val,
-            ViewMode.SEGMENTED_LUNGS:            self.segmentedLungsImg,
+        self._modes = {
+            ViewMode.ORIGINAL:                   self._originalImgNpArray,
+            ViewMode.LUNGS_MASK:                 self._lungsMaskImg,
+            ViewMode.SEGMENTED_LUNGS:            self._segmentedLungsImg,
             ViewMode.SEGMENTED_LUNGS_W_INTERNAL: "SegmentedLungsWithInternalStructure",
         }
 
-    def addFile(self, filename, loadTag):
+    def addFile(self, filename, loadTag) -> None:
         """Add a filename and abbreviated tag map, previously stored file will be lost."""
-        self.filename = filename
-        self.loadTag = loadTag
-        pass
+        self._filename = filename
+        self._loadTag = loadTag
 
-    def getDicomFile(self, index = None):
+    def getDicomFile(self, index = None) -> Union[FileDataset, DicomDir]:
         """Get the object storing tag information from Dicom file."""
-        return self.dicomData
+        return self._dicomData
 
-    def getExtraTagValues(self):
-        """Return the extra tag values calculated from the series tag info stored in self.filenames."""
-        #  start, interval, numTimes = self.getTimestepSpec()
-        extraVals = {
-            "blabla": "blabla"
-                      """ "NumImages":    len(self.filenames),
-            "TimestepSpec": "start: %i, interval: %i, # Steps: %i"
-                            % (start, interval, numTimes),
-            "StartTime":    start,
-            "NumTimesteps": numTimes,
-            "TimeInterval": interval,"""
-        }
+    def getExtraTagValues(self) -> dict:
+        return {}
 
-        return extraVals
-
-    def getTagValues(self, names, index = None):
+    def getTagValues(self, names, index = None) -> tuple:
         """Get the tag values for tag names listed in `names' for image at the given index."""
-        if not self.filename:
+        if not self._filename:
             return ()
 
         dcm = self.getDicomFile(index)
         extraVals = self.getExtraTagValues()
 
-        # TODO: kludge? More general solution of telling series apart
-        # dcm.SeriesDescription=dcm.get('SeriesDescription',dcm.get('SeriesInstanceUID','???'))
-
         return tuple(str(dcm.get(n, extraVals.get(n, ""))) for n in names)
 
-    def getPixelData(self, mode: ViewMode, index = 0):
-        if mode in self.modes:
-            return self.modes[mode]
+    def getPixelData(self, mode: ViewMode, index = 0) -> Optional[ndarray]:
+        if mode in self._modes:
+            return self._modes[mode]
         else:
             return None
 
-    def updateMasks(self, param):
-        self.dicomMasks = utils.getDicomMasks(self.originalImgNpArray, param)
-        self.segmentedLungsImg = utils.getSegmentedLungPixels(self.originalImgNpArray,
-                                                              self.dicomMasks.segmentedLungsFill)
-        self.modes[ViewMode.LUNGS_MASK] = self.dicomMasks.segmentedLungsFill
-        self.modes[ViewMode.SEGMENTED_LUNGS] = self.segmentedLungsImg
+    def updateMasks(self, param) -> None:
+        self._dicomMasks = utils.getDicomMasks(self._originalImgNpArray, param)
+        self._segmentedLungsImg = utils.getSegmentedLungPixels(self._originalImgNpArray,
+                                                               self._dicomMasks.segmentedLungsFill)
+        self._lungsMaskImg = self._dicomMasks.segmentedLungsFill
+
+        self._modes[ViewMode.LUNGS_MASK] = self._lungsMaskImg
+        self._modes[ViewMode.SEGMENTED_LUNGS] = self._segmentedLungsImg

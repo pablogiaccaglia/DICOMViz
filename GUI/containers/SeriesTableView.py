@@ -7,10 +7,10 @@ class SeriesTableView(QTableView):
     def __init__(self, fatherWidget = None):
         super().__init__(fatherWidget)
 
-        self.__setupUI()
+        self._setupUI()
 
-    def __setupUI(self):
-        self.__setSizePolicy()
+    def _setupUI(self):
+        self._setSizePolicy()
 
         self.setMinimumSize(QtCore.QSize(0, 0))
         self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
@@ -22,13 +22,13 @@ class SeriesTableView(QTableView):
         self.setSortingEnabled(True)
         self.setObjectName("SeriesSelection")
 
-        self.__setupHHeader()
+        self._setupHHeader()
 
-        self.__setupVHeader()
+        self._setupVHeader()
 
-        self.__retranslateUI()
+        self._retranslateUI()
 
-    def __setSizePolicy(self):
+    def _setSizePolicy(self) -> None:
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding,
                                            QtWidgets.QSizePolicy.Policy.Expanding)
         sizePolicy.setHorizontalStretch(0)
@@ -37,7 +37,7 @@ class SeriesTableView(QTableView):
 
         self.setSizePolicy(sizePolicy)
 
-    def __setupHHeader(self):
+    def _setupHHeader(self) -> None:
         self.horizontalHeader().setCascadingSectionResizes(True)
         self.horizontalHeader().setDefaultSectionSize(30)
         self.horizontalHeader().setHighlightSections(False)
@@ -45,21 +45,21 @@ class SeriesTableView(QTableView):
         self.horizontalHeader().setSortIndicatorShown(True)
         self.horizontalHeader().setStretchLastSection(False)
 
-    def __setupVHeader(self):
+    def _setupVHeader(self) -> None:
         self.verticalHeader().setVisible(False)
         self.verticalHeader().setCascadingSectionResizes(False)
         self.verticalHeader().setHighlightSections(False)
 
-    def __retranslateUI(self):
+    def _retranslateUI(self) -> None:
         _translate = QtCore.QCoreApplication.translate
         self.setToolTip(_translate("MainWindow", "List of imported DICOM series"))
 
-    def resizeColumns(self, *args):
+    def resizeColumns(self) -> None:
         """Resizes columns to contents, setting the last section to stretch."""
         self.horizontalHeader().setStretchLastSection(True)
         self.resizeColumnsToContents()
         self.horizontalHeader().setStretchLastSection(True)
 
-    def clickRow(self, index: int):
+    def clickRow(self, index: int) -> None:
         self.selectRow(index)
         self.clicked.emit(self.currentIndex())
