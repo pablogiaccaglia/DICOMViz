@@ -67,6 +67,14 @@ def loadDicomFile(filename) -> Optional[DicomFileWrapper]:
     except errors.InvalidDicomError:
         pass
 
+def loadDicomFileFromFolderNotSeries(filenames, queue):
+
+    for filename in filenames:
+        try:
+            dicomFile = DicomFileWrapper(filename)
+            queue.put((dicomFile, filename))
+        except errors.InvalidDicomError:
+            pass
 
 def loadDicomDir(rootDirectory, numberOfProcesses = None) -> list:
 
@@ -109,6 +117,39 @@ def loadDicomDir(rootDirectory, numberOfProcesses = None) -> list:
 
     # all the built dicomSeries object are returned as a list
     return list(dictOfSeries.values())
+
+
+def loadFilesInDirNotSeries(rootDirectory, numberOfProcesses = None) -> list:
+
+    allFiles = []
+    for root, _, files in os.walk(rootDirectory):
+        allFiles += [os.path.join(root, f) for f in files if f.lower() != "dicomdir"]
+
+    numberOfProcesses = numberOfProcesses or cpu_count()
+    m = Manager()
+    queue = m.Queue()
+    numFiles = len(allFiles)
+    res = []
+    listOfFiles = []
+
+    if not numFiles:
+        return []
+
+    with closing(Pool(processes = numberOfProcesses)) as pool:
+
+        for fileSequence in np.array_split(allFiles, numberOfProcesses):
+            res.append(pool.apply_async(loadDicomFileFromFolderNotSeries, (fileSequence, queue)))
+
+        # loop so long as any process is busy or there are files on the queue to process
+        while any(not r.ready() for r in res) or not queue.empty():
+            try:
+                dicomFileWrapper, filename = queue.get(False)
+                listOfFiles.append((filename, dicomFileWrapper))
+
+            except Empty:
+                pass
+
+    return listOfFiles
 
 
 def loadDicomZip(filename) -> list:

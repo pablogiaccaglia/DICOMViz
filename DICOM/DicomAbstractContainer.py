@@ -30,7 +30,7 @@ class DicomAbstractContainerClass(ABC):
             image[image == -2000] = 0
 
             # Convert to Hounsfield units (HU)
-            try:  # TODO HANDLE FOR RGB
+            try:
                 intercept = scans[0].RescaleIntercept
                 slope = scans[0].RescaleSlope
 

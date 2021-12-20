@@ -19,12 +19,12 @@ def handler(msg_type, msg_log_context, msg_string):
     pass
 
 
-# qInstallMessageHandler(handler)
+qInstallMessageHandler(handler)
 
 
-# def excepthook(exc_type, exc_value, exc_tb):
+def excepthook(exc_type, exc_value, exc_tb):
     # really bad trick to ignore exception raised by modules which have been monkey patched. Do not emulate :(
-#    pass
+    pass
 
 
 if __name__ == "__main__":
@@ -37,7 +37,6 @@ if __name__ == "__main__":
     app.setStyle("Plastique")
 
     # setup stylesheet
-    # app.setStyleSheet(qdarktheme.load_stylesheet())
     app.setAttribute(Qt.ApplicationAttribute.AA_Use96Dpi)
 
     # set icon
@@ -53,6 +52,6 @@ if __name__ == "__main__":
     timer.start(500)  # You may change this if you wish.
     timer.timeout.connect(lambda: None)  # Let the interpreter run each 500 ms.
 
-   # sys.excepthook = excepthook
+    sys.excepthook = excepthook
 
     sys.exit(app.exec())

@@ -14,9 +14,12 @@ class DockFiles(Dock):
 
     def loadFiles(self, files: List) -> None:
 
-        dicomFileObject = files[0]
         self._listView.clear()
-        self._filesList.append(dicomFileObject.filename)
+
+        for file in files:
+            dicomFileObject = file
+            self._filesList.append(dicomFileObject.filename)
+
         self._currentPosition = len(self._filesList) - 1
 
         for fileName in self._filesList:

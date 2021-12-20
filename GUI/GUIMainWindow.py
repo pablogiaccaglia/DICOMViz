@@ -1,6 +1,8 @@
 import qdarktheme
 from PyQt6 import QtWidgets, QtCore, QtGui
 from PyQt6.QtWidgets import QMainWindow
+from pyqtgraph.exporters import Exporter
+from pyqtgraph.exporters import MatplotlibExporter
 import DICOM
 from DICOM.DicomAbstractContainer import ViewMode
 from GUI.containers.SeriesSelection import SeriesSelection
@@ -11,7 +13,6 @@ from GUI.menus.MenuBar import MenuBar
 from GUI.graphics.DICOMGraphicsView import DICOMGraphicsView
 from GUI.containers.TagsGroupBox import TagsGroupBox
 from GUI.containers.SeriesTableView import SeriesTableView
-
 
 class GUIMainWindow(QMainWindow):
     """ Main Window from where all the magic is coordinated :) """
@@ -92,6 +93,7 @@ class GUIMainWindow(QMainWindow):
 
         self.__retranslateUI()
 
+        self.__removeUnsupportedExportFormats()
         self.show()
 
     def start(self):
@@ -157,3 +159,14 @@ class GUIMainWindow(QMainWindow):
         self._graphicsBox.setObjectName("graphicsBox")
         self._gridLayoutGraphicsBox.setObjectName("gridLayoutGraphicsBox")
         self.graphicsView.setObjectName("_graphicsView")
+
+
+    def __removeUnsupportedExportFormats(self):
+
+        toRemove = [MatplotlibExporter]
+
+        for exporterToRemove in toRemove:
+            try:
+                Exporter.Exporters.remove(exporterToRemove)
+            except ValueError:
+                pass  # do nothing! Thread safe, better than an if check

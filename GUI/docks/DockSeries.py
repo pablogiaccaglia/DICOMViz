@@ -13,8 +13,11 @@ class DockSeries(Dock):
         self._currentSeriesObject = None
         self.currentSelectedSeriesIndex = 0
         self._scrollBarPos = 50
+        self.firstLoad = True
 
     def loadFiles(self, files: List) -> None:
+
+        self.firstLoad = True
 
         self._listView.clear()
         self._filesList = files
@@ -37,6 +40,8 @@ class DockSeries(Dock):
 
         self._listView.setMinimumWidth(self._listView.sizeHintForColumn(0) + 20)
 
+        self.firstLoad = False
+
     def setSelectedItem(self, index) -> None:
         super().setSelectedItem(index)
         self._currentRowChanged()
@@ -52,6 +57,9 @@ class DockSeries(Dock):
         self._scrollBarPos = self._scrollBarPos + 16.5
 
     def _handleItemSelectionChange(self) -> None:
+
+        if self.firstLoad:
+            pass
 
         try:
             if not len(self._listView.selectedItems()):

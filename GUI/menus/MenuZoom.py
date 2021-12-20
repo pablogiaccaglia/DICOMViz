@@ -45,38 +45,38 @@ class MenuZoom(AbstractMenu):
         self._actionZoom100 = QtWidgets.QWidgetAction(self.menuBar)
         self._actionZoom100.setObjectName("actionZoom100")
         self._actionZoom100.triggered.connect(
-            partial(self.graphicsView.setViewSize,
-                    ZoomAmount.ZOOM_100.value[1],
-                    ZoomAmount.ZOOM_100.value[1],
-                    ZoomAmount.ZOOM_100.value[0],
-                    ZoomAmount.ZOOM_100.value[0]))
+                partial(self.graphicsView.setViewSize,
+                        ZoomAmount.ZOOM_100.value[1],
+                        ZoomAmount.ZOOM_100.value[1],
+                        ZoomAmount.ZOOM_100.value[0],
+                        ZoomAmount.ZOOM_100.value[0]))
 
         self._actionZoom200 = QtWidgets.QWidgetAction(self.menuBar)
         self._actionZoom200.setObjectName("_actionZoom200")
         self._actionZoom200.triggered.connect(
-            partial(self.graphicsView.setViewSize,
-                    ZoomAmount.ZOOM_200.value[1],
-                    ZoomAmount.ZOOM_200.value[1],
-                    ZoomAmount.ZOOM_200.value[0],
-                    ZoomAmount.ZOOM_200.value[0]))
+                partial(self.graphicsView.setViewSize,
+                        ZoomAmount.ZOOM_200.value[1],
+                        ZoomAmount.ZOOM_200.value[1],
+                        ZoomAmount.ZOOM_200.value[0],
+                        ZoomAmount.ZOOM_200.value[0]))
 
         self._actionZoom400 = QtWidgets.QWidgetAction(self.menuBar)
         self._actionZoom400.setObjectName("_actionZoom400")
         self._actionZoom400.triggered.connect(
-            partial(self.graphicsView.setViewSize,
-                    ZoomAmount.ZOOM_400.value[1],
-                    ZoomAmount.ZOOM_400.value[1],
-                    ZoomAmount.ZOOM_400.value[0],
-                    ZoomAmount.ZOOM_400.value[0]))
+                partial(self.graphicsView.setViewSize,
+                        ZoomAmount.ZOOM_400.value[1],
+                        ZoomAmount.ZOOM_400.value[1],
+                        ZoomAmount.ZOOM_400.value[0],
+                        ZoomAmount.ZOOM_400.value[0]))
 
         self._actionZoom800 = QtWidgets.QWidgetAction(self.menuBar)
         self._actionZoom800.setObjectName("_actionZoom800")
         self._actionZoom800.triggered.connect(
-            partial(self.graphicsView.setViewSize,
-                    ZoomAmount.ZOOM_800.value[1],
-                    ZoomAmount.ZOOM_800.value[1],
-                    ZoomAmount.ZOOM_800.value[0],
-                    ZoomAmount.ZOOM_800.value[0]))
+                partial(self.graphicsView.setViewSize,
+                        ZoomAmount.ZOOM_800.value[1],
+                        ZoomAmount.ZOOM_800.value[1],
+                        ZoomAmount.ZOOM_800.value[0],
+                        ZoomAmount.ZOOM_800.value[0]))
 
         self._actionZoomIn = QtWidgets.QWidgetAction(self.menuBar)
         self._actionZoomIn.setObjectName("_actionZoomIn")
@@ -103,14 +103,14 @@ class MenuZoom(AbstractMenu):
 
         self.actionFillViewport.setText(_translate("MainWindow", "Fill viewport"))
         self.actionFillViewport.setStatusTip(_translate("MainWindow", "Fill the whole visible viewport"))
-        self.actionFillViewport.setShortcut(_translate("MainWindow", "Ctrl+0"))
+        # self.actionFillViewport.setShortcut(_translate("MainWindow", "Ctrl+0"))
 
         self._actionZoom100.setText(_translate("MainWindow", "100%"))
         self._actionZoom100.setStatusTip(_translate("MainWindow", "100% zoom in"))
-        self._actionZoom100.setShortcut(_translate("MainWindow", "Ctrl+1"))
+        # self._actionZoom100.setShortcut(_translate("MainWindow", "Ctrl+1"))
 
         self._actionZoom200.setText(_translate("MainWindow", "200%"))
-        self._actionZoom200.setShortcut(_translate("MainWindow", "Ctrl+"))
+        # self._actionZoom200.setShortcut(_translate("MainWindow", "Ctrl+"))
         self._actionZoom200.setStatusTip(_translate("MainWindow", "200% zoom in"))
 
         self._actionZoom400.setText(_translate("MainWindow", "400%"))
@@ -121,8 +121,8 @@ class MenuZoom(AbstractMenu):
 
         self._actionZoomIn.setText(_translate("MainWindow", "Zoom in"))
         self._actionZoomIn.setStatusTip(_translate("MainWindow", "zooms in"))
-        self._actionZoomIn.setShortcut(_translate("MainWindow", "Ctrl++"))
+        # self._actionZoomIn.setShortcut(_translate("MainWindow", "Ctrl++"))
 
         self._actionZoomOut.setText(_translate("MainWindow", "Zoom out"))
         self._actionZoomOut.setStatusTip(_translate("MainWindow", "zooms out"))
-        self._actionZoomOut.setShortcut(_translate("MainWindow", "Ctrl+-"))
+        # self._actionZoomOut.setShortcut(_translate("MainWindow", "Ctrl+-"))

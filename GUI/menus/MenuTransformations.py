@@ -82,24 +82,24 @@ class MenuTransformations(AbstractMenu):
 
         self._actionRotate90degreesCCW.setText(_translate("MainWindow", "Rotate 90° CCW"))
         self._actionRotate90degreesCCW.setStatusTip(_translate("MainWindow", "Rotate 90 degrees counter clock wise"))
-        self._actionRotate90degreesCCW.setShortcut(_translate("MainWindow", "Ctrl+Alt+T"))
+        # self._actionRotate90degreesCCW.setShortcut(_translate("MainWindow", "Ctrl+Alt+T"))
 
         self._actionRotate90DegreesCW.setText(_translate("MainWindow", "Rotate 90° CW"))
         self._actionRotate90DegreesCW.setStatusTip(_translate("MainWindow", "Rotate 90 degrees clockwise"))
-        self._actionRotate90DegreesCW.setShortcut(_translate("MainWindow", "Meta+Ctrl+T"))
+        # self._actionRotate90DegreesCW.setShortcut(_translate("MainWindow", "Meta+Ctrl+T"))
 
         self._actionRotate180Degrees.setText(_translate("MainWindow", "Rotate 180°"))
         self._actionRotate180Degrees.setStatusTip(_translate("MainWindow", "Rotate 180 degrees clockwise"))
-        self._actionRotate180Degrees.setShortcut(_translate("MainWindow", "Ctrl+F"))
+        # self._actionRotate180Degrees.setShortcut(_translate("MainWindow", "Ctrl+F"))
 
         self._actionFlipHorizontal.setText(_translate("MainWindow", "Flip horizontal"))
         self._actionFlipHorizontal.setStatusTip(_translate("MainWindow", "Flip Horizontal"))
-        self._actionFlipHorizontal.setShortcut(_translate("MainWindow", "Ctrl+J"))
+        # self._actionFlipHorizontal.setShortcut(_translate("MainWindow", "Ctrl+J"))
 
         self._actionFlipVertical.setText(_translate("MainWindow", "Flip vertical"))
         self._actionFlipVertical.setStatusTip(_translate("MainWindow", "Flip vertical"))
-        self._actionFlipVertical.setShortcut(_translate("MainWindow", "Ctrl+W"))
+        # self._actionFlipVertical.setShortcut(_translate("MainWindow", "Ctrl+W"))
 
         self._actionClearTransformations.setText(_translate("MainWindow", "Clear transformations"))
         self._actionClearTransformations.setStatusTip(_translate("MainWindow", "Clear transformations"))
-        self._actionClearTransformations.setShortcut(_translate("MainWindow", "Ctrl+Ù"))
+        # self._actionClearTransformations.setShortcut(_translate("MainWindow", "Ctrl+Ù"))

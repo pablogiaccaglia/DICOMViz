@@ -232,9 +232,10 @@ class CustomImageView(pyqtgraph.ImageView):
 
         self.ui.sliderGroup = QtWidgets.QGroupBox(self)
         self.ui.sliderGroup.setObjectName("sliderGroup")
+        self.ui.sliderGroup.setTitle(self._translate("Form", "Slider Frame"))
 
         self.ui.gridLayoutSlider = QtWidgets.QGridLayout(self.ui.sliderGroup)
-        self.ui.gridLayoutSlider.setContentsMargins(0, 0, 0, 0)
+        self.ui.gridLayoutSlider.setContentsMargins(4, 4, 4, 4)
         self.ui.gridLayoutSlider.setSpacing(0)
         self.ui.gridLayoutSlider.setObjectName("gridLayoutSlider")
 
@@ -246,11 +247,11 @@ class CustomImageView(pyqtgraph.ImageView):
         self.ui.slider.setValue(630)
         self.ui.slider.setObjectName("slider")
 
-        self.ui.gridLayoutSlider.addWidget(self.ui.slider, 0, 2, 1, 1)
+        self.ui.gridLayoutSlider.addWidget(self.ui.slider, 2, 2, 1, 1)
         self.ui.gridLayout_3.addWidget(self.ui.sliderGroup, 15, 0, 1, 1)
 
         self.ui.sliderButton.setText(self._translate("Form", "Slider"))
-        self.ui.sliderGroup.setTitle(self._translate("Form", "Slider Frame"))
+
         self.ui.sliderGroup.hide()
 
         QtCore.QMetaObject.connectSlotsByName(self)
@@ -352,7 +353,7 @@ class CustomImageView(pyqtgraph.ImageView):
         self.ui.autoHistogramRangeRadioButton.setText(self._translate("Form", "Auto Histogram Range"))
         self.ui.labelGifSliderValue.setText(self._translate("Form", str(self.ui.gifSlider.value())))
 
-        self.ui.labelGifSlider.setText(self._translate("Form", "Speed"))
+        self.ui.labelGifSlider.setText(self._translate("Form", "Animation Speed"))
         self.ui.optionsGroup.hide()
 
         QtCore.QMetaObject.connectSlotsByName(self)

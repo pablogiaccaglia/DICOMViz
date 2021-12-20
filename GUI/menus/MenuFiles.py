@@ -62,9 +62,18 @@ class MenuFiles(AbstractMenu, QDialog):
         self.addAction(self.actionRemoveSeries)
 
     def __openDICOMFolder(self) -> None:
+
+        """
+        dialog = QFileDialog(self.window)
+        dialog.setWindowTitle("Select Directory")
+        dialog.setDirectory(self.window.dicomHandler.lastLoadFolderDirectory)
+        dialog.setOption(QtWidgets.QFileDialog.Option.DontUseNativeDialog, True)
+        dialog.setOption(QtWidgets.QFileDialog.Option.ShowDirsOnly)
+        folderPath = dialog.show()"""
+
         folderPath = QFileDialog.getExistingDirectory(self.window, "Select Directory",
-                                                      self.window.dicomHandler.lastLoadFolderDirectory,
-                                                      options = QtWidgets.QFileDialog.Option.DontUseNativeDialog)
+                                                      self.window.dicomHandler.lastLoadFolderDirectory
+                                                      )
         if folderPath:
             self.window.dicomHandler.handleFilesFromFolder(folderPath)
 
@@ -83,16 +92,16 @@ class MenuFiles(AbstractMenu, QDialog):
 
         self.actionOpenDICOMFile.setText(_translate("MainWindow", "Open DICOM file"))
         self.actionOpenDICOMFile.setStatusTip(_translate("MainWindow", "Open a DICOM file"))
-        self.actionOpenDICOMFile.setShortcut(_translate("MainWindow", "Ctrl+O"))
+        # self.actionOpenDICOMFile.setShortcut(_translate("MainWindow", "Ctrl+O"))
 
         self.actionOpenDICOMFolder.setText(_translate("MainWindow", "Open DICOM folder"))
         self.actionOpenDICOMFolder.setStatusTip(_translate("MainWindow", "Open DICOM folder"))
-        self.actionOpenDICOMFolder.setShortcut(_translate("MainWindow", "Ctrl+Shift+O"))
+        # self.actionOpenDICOMFolder.setShortcut(_translate("MainWindow", "Ctrl+Shift+O"))
 
         self.actionRemoveFromView.setText(_translate("MainWindow", "Remove image from view"))
         self.actionRemoveFromView.setStatusTip(_translate("MainWindow", "Remove image from view"))
-        self.actionRemoveFromView.setShortcut(_translate("MainWindow", "§"))
+        # self.actionRemoveFromView.setShortcut(_translate("MainWindow", "§"))
 
         self.actionRemoveSeries.setText(_translate("MainWindow", "Remove series"))
         self.actionRemoveSeries.setStatusTip(_translate("MainWindow", "Remove series"))
-        self.actionRemoveSeries.setShortcut(_translate("MainWindow", "ì"))
+        # self.actionRemoveSeries.setShortcut(_translate("MainWindow", "ì"))

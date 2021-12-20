@@ -1,7 +1,7 @@
 import numpy
 from skimage import measure
 
-def largest_label_volume(im, bg = -1):
+def largestLabelVolume(im, bg = -1):
     vals, counts = numpy.unique(im, return_counts = True)
     counts = counts[vals != bg]
     vals = vals[vals != bg]
@@ -11,7 +11,7 @@ def largest_label_volume(im, bg = -1):
         return None
 
 
-def segment_lung_mask(image, param, fill_lung_structures = True):
+def segmentLungsMask(image, param, fill_lung_structures = True):
     # not actually binary, but 1 and 2.
     # 0 is treated as background, which we do not want
     binary_image = numpy.array(image >= param, dtype = numpy.int8) + 1
@@ -28,13 +28,12 @@ def segment_lung_mask(image, param, fill_lung_structures = True):
 
     # Method of filling the lung structures (that is superior to
     # something like morphological closing)
-
     if fill_lung_structures:
         # For every slice we determine the largest solid structure
         for i, axial_slice in enumerate(binary_image):
             axial_slice = axial_slice - 1
             labeling = measure.label(axial_slice)
-            l_max = largest_label_volume(labeling, bg = 0)
+            l_max = largestLabelVolume(labeling, bg = 0)
 
             if l_max is not None:  # This slice contains some lung
                 binary_image[i][labeling != l_max] = 1
@@ -43,7 +42,7 @@ def segment_lung_mask(image, param, fill_lung_structures = True):
 
     # Remove other air pockets inside body
     labels = measure.label(binary_image, background = 0)
-    l_max = largest_label_volume(labels, bg = 0)
+    l_max = largestLabelVolume(labels, bg = 0)
     if l_max is not None:  # There are air pockets
         binary_image[labels != l_max] = 0
 

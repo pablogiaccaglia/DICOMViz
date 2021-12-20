@@ -27,19 +27,16 @@ class MenuAlterations(AbstractMenu):
             self.ORIGINAL = menuAlterations.actionDefaultView
             self.LUNGS_MASK = menuAlterations.actionLungsMask
             self.SEGMENTED_LUNGS = menuAlterations.actionSegmentedLungsMask
-            self.SEGMENTED_LUNGS_W_INTERNAL = menuAlterations.actionSegmentedLungsMaskWInternal
 
     def disableOptions(self) -> None:
         self.actionDefaultView.setEnabled(False)
         self.actionLungsMask.setEnabled(False)
         self.actionSegmentedLungsMask.setEnabled(False)
-        self.actionSegmentedLungsMaskWInternal.setEnabled(False)
         self.actionNegative.setEnabled(False)
 
     def toggleActions(self, value: bool, dicomContainer = None) -> None:
         self.actionLungsMask.setEnabled(value)
         self.actionSegmentedLungsMask.setEnabled(value)
-        self.actionSegmentedLungsMaskWInternal.setEnabled(value)
 
     def enableNegativeImageAction(self) -> None:
         self.actionNegative.setEnabled(True)
@@ -61,9 +58,6 @@ class MenuAlterations(AbstractMenu):
         self.actionSegmentedLungsMask = QtWidgets.QWidgetAction(self.menuBar)
         self.actionSegmentedLungsMask.setObjectName("actionSegmentedLungs")
 
-        self.actionSegmentedLungsMaskWInternal = QtWidgets.QWidgetAction(self.menuBar)
-        self.actionSegmentedLungsMaskWInternal.setObjectName("actionSegmentedLungsWithInternal")
-
         self.actionNegative = QtWidgets.QWidgetAction(self.menuBar)
         self.actionNegative.setObjectName("actionNegative")
 
@@ -80,10 +74,6 @@ class MenuAlterations(AbstractMenu):
                 partial(self.__selectViewModeMenuOption, self.viewModeMenuOptions.SEGMENTED_LUNGS,
                         ViewMode.SEGMENTED_LUNGS))
 
-        self.actionSegmentedLungsMaskWInternal.triggered.connect(
-                partial(self.__selectViewModeMenuOption, self.viewModeMenuOptions.SEGMENTED_LUNGS_W_INTERNAL,
-                        ViewMode.SEGMENTED_LUNGS_W_INTERNAL))
-
         self.actionNegative.triggered.connect(
                 partial(self.window.changeViewMode, ViewMode.NEGATIVE))
 
@@ -92,7 +82,6 @@ class MenuAlterations(AbstractMenu):
         self.addAction(self.actionNegative)
         self.addAction(self.actionLungsMask)
         self.addAction(self.actionSegmentedLungsMask)
-        self.addAction(self.actionSegmentedLungsMaskWInternal)
 
     def __retranslateUI(self) -> None:
         _translate = QtCore.QCoreApplication.translate
@@ -100,20 +89,16 @@ class MenuAlterations(AbstractMenu):
 
         self.actionLungsMask.setText(_translate("MainWindow", "Lungs Mask"))
         self.actionLungsMask.setStatusTip(_translate("MainWindow", "Lungs Mask"))
-        self.actionLungsMask.setShortcut(_translate("MainWindow", "-"))
+        # self.actionLungsMask.setShortcut(_translate("MainWindow", "-"))
 
         self.actionDefaultView.setText(_translate("MainWindow", "Default View"))
         self.actionDefaultView.setStatusTip(_translate("MainWindow", "DefaultView"))
-        self.actionDefaultView.setShortcut(_translate("MainWindow", "+"))
+        # self.actionDefaultView.setShortcut(_translate("MainWindow", "+"))
 
         self.actionNegative.setText(_translate("MainWindow", "Negative"))
         self.actionNegative.setStatusTip(_translate("MainWindow", "Negative Image"))
-        self.actionNegative.setShortcut(_translate("MainWindow", "N"))
+        # self.actionNegative.setShortcut(_translate("MainWindow", "N"))
 
         self.actionSegmentedLungsMask.setText(_translate("MainWindow", "Segmented Lungs Mask"))
         self.actionSegmentedLungsMask.setStatusTip(_translate("MainWindow", "Segmented Lungs Mask"))
-        self.actionSegmentedLungsMask.setShortcut(_translate("MainWindow", "/"))
-
-        self.actionSegmentedLungsMaskWInternal.setText(_translate("MainWindow", "Lungs Internal Structure"))
-        self.actionSegmentedLungsMaskWInternal.setStatusTip(_translate("MainWindow", "Lungs Internal Structure"))
-        self.actionSegmentedLungsMaskWInternal.setShortcut(_translate("MainWindow", "*"))
+        # self.actionSegmentedLungsMask.setShortcut(_translate("MainWindow", "/"))

@@ -9,7 +9,7 @@ from GUI.graphics.CustomImageView import CustomImageView, ROTATION_TRANSFORMATIO
 from pyqtgraph.GraphicsScene.exportDialog import ExportDialog
 
 # VIEW MODES
-from GUI.graphics.GIFHandler import GIFHandler
+from GUI.graphics.AnimationHandler import AnimationHandler
 from GUI.graphics.imageUtils import FLIP_TRANSFORMATION
 
 
@@ -93,9 +93,7 @@ class DICOMGraphicsView(CustomImageView):
                 windowSingleton.mainWindow.dicomHandler.currentShownDicomFileObject = DicomContainer
                 windowSingleton.mainWindow.dicomHandler.currentDicomFileObject = DicomContainer
 
-        except Exception as e:
-            print(str(e))
-            print(str(e.__traceback__))
+        except Exception:
             self._setImageToView(None, ViewMode.ORIGINAL, False)
             windowSingleton.mainWindow.setWindowTitle("DICOM Visualizer: No image")
 
@@ -117,7 +115,7 @@ class DICOMGraphicsView(CustomImageView):
             self._gifHandler.dockSeriesContentChanged()
             return
 
-        self._gifHandler = GIFHandler(dockSeries = windowSingleton.mainWindow.seriesFilesDock)
+        self._gifHandler = AnimationHandler(dockSeries = windowSingleton.mainWindow.seriesFilesDock)
 
     def zoomIn(self) -> None:
         self.view.zoomIn()

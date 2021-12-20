@@ -178,11 +178,17 @@ class DicomSeries(DicomAbstractContainer.DicomAbstractContainerClass):
 
     def computeSliceThickness(self) -> None:
         if self._sliceThickness is None:
-            try:
-                self._sliceThickness = np.abs(
-                        self._supportDcmFiles[0].ImagePositionPatient[2] - self._supportDcmFiles[1].ImagePositionPatient[2])
-            except:
-                self._sliceThickness = np.abs(self._supportDcmFiles[0].SliceLocation - self._supportDcmFiles[1].SliceLocation)
+            if len(self._supportDcmFiles) > 1:
+                try:
+                    self._sliceThickness = np.abs(
+                            self._supportDcmFiles[0].ImagePositionPatient[2] -
+                            self._supportDcmFiles[1].ImagePositionPatient[2])
+                except:
+                    self._sliceThickness = np.abs(
+                        self._supportDcmFiles[0].SliceLocation - self._supportDcmFiles[1].SliceLocation)
+
+            else:
+                return self._supportDcmFiles[0].SliceLocation
 
     def sortSeries(self) -> None:
 

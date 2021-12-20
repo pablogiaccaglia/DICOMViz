@@ -49,10 +49,10 @@ class MenuExport(AbstractMenu):
 
         self.setTitle(_translate("MainWindow", "Export"))
 
-        self._actionExportImages.setText(_translate("MainWindow", "Export images"))
+        self._actionExportImages.setText(_translate("MainWindow", "Export image"))
         self._actionExportImages.setStatusTip(_translate("MainWindow", "Export images in different formats"))
-        self._actionExportImages.setShortcut(_translate("MainWindow", "Ctrl+E"))
+        # self._actionExportImages.setShortcut(_translate("MainWindow", "Ctrl+E"))
 
         self._actionCopy_to_clipboard.setText(_translate("MainWindow", "Copy to clipboard"))
         self._actionCopy_to_clipboard.setStatusTip(_translate("MainWindow", "Copy image to clipboard"))
-        self._actionCopy_to_clipboard.setShortcut(_translate("MainWindow", "Ctrl+C"))
+        # self._actionCopy_to_clipboard.setShortcut(_translate("MainWindow", "Ctrl+C"))

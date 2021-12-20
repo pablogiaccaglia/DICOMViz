@@ -1,5 +1,6 @@
 import os
 import threading
+import time
 import zipfile
 from collections import OrderedDict
 from itertools import chain
@@ -15,13 +16,14 @@ from DICOM.DicomSeries import DicomSeries
 from DICOM.dicom import loadDicomDir, loadDicomZip, loadDicomFile, seriesListColumns
 from queue import Queue, Empty
 
+from DICOM.dicom import loadFilesInDirNotSeries
 from GUI import windowSingleton
 from GUI.docks.Dock import Dock
 from GUI.docks.DockFiles import DockFiles
 from GUI.docks.DockSeries import DockSeries
 from GUI.graphics.CustomImageView import ROTATION_TRANSFORMATION
 from GUI.graphics.GIFExporter import GIFExporter
-from GUI.graphics.GIFHandler import GIFHandler
+from GUI.graphics.AnimationHandler import AnimationHandler
 from GUI.graphics.imageUtils import FLIP_TRANSFORMATION
 
 
@@ -44,7 +46,7 @@ class Handler(QObject):
         self._loadDirThread.start()  # start the thread now, it will wait until something is put on self.srcQueue
         self._lastLoadFolderDir = None
         self._lastLoadFileDir = None
-        self._loadedSingleFile = None
+        self._loadedSingleFile = []
         self._connectSignals()
         self._currentShownDicomFileObject = None
         self._isFirstLoad = True
@@ -132,9 +134,11 @@ class Handler(QObject):
     def applyTransformationToShownImage(cls, transformation) -> None:
 
         if isinstance(transformation, ROTATION_TRANSFORMATION):
-            windowSingleton.mainWindow.graphicsView.applyTransformations(rotationTransformation = transformation, fromAction = True)
+            windowSingleton.mainWindow.graphicsView.applyTransformations(rotationTransformation = transformation,
+                                                                         fromAction = True)
         elif isinstance(transformation, FLIP_TRANSFORMATION):
-            windowSingleton.mainWindow.graphicsView.applyTransformations(flipTransformation = transformation, fromAction = True)
+            windowSingleton.mainWindow.graphicsView.applyTransformations(flipTransformation = transformation,
+                                                                         fromAction = True)
 
     @classmethod
     def clearTransformationsToShownImage(cls) -> None:
@@ -177,7 +181,8 @@ class Handler(QObject):
 
     @classmethod
     def changeAnimateActionText(cls) -> None:
-        windowSingleton.mainWindow.menuBar.menuCine.changeAnimateActionText(isAnimationOn = windowSingleton.mainWindow.graphicsView.isAnimationOn())
+        windowSingleton.mainWindow.menuBar.menuCine.changeAnimateActionText(
+            isAnimationOn = windowSingleton.mainWindow.graphicsView.isAnimationOn())
 
     def setImageToView(self, DicomContainer: 'DicomAbstractContainerClass',
                        viewMode: ViewMode,
@@ -193,7 +198,7 @@ class Handler(QObject):
 
     def prepareGifExporter(self) -> None:
         data = (self._srcList[self._currentSelectedSeriesIndex][1]).getPixelDataList(mode = self.currentViewMode)
-        GIFHandler.prepareGIFExport(data)
+        AnimationHandler.prepareGIFExport(data)
 
     def removeSeries(self) -> None:
         removedRowTuple = windowSingleton.mainWindow.seriesSelectionModel.removeRow(self.currSelectedSeriesIndex)
@@ -294,6 +299,13 @@ class Handler(QObject):
 
         windowSingleton.mainWindow.seriesSelectionWidget.clickRow(index = 0)
 
+    def _loadFilesThreadJob(self, src) -> None:
+        dicomFile = loadDicomFile(src)
+        self._srcDicomFileObjectsDict[src] = dicomFile
+        self._lastLoadFileDir = src
+        self._loadedSingleFile = [self._srcDicomFileObjectsDict[self._lastLoadFileDir]]
+        self.loadFilesIsComplete.emit()
+
     def _loadSourceThread(self) -> None:
         """
         This is run in a daemon thread and continually checks self.srcQueue for a queued directory or zip file to scan
@@ -310,16 +322,27 @@ class Handler(QObject):
                 elif zipfile.is_zipfile(src):
                     loader = loadDicomZip
                 else:
-                    dicomFile = loadDicomFile(src)
-                    self._srcDicomFileObjectsDict[src] = dicomFile
-                    self._lastLoadFileDir = src
-                    self._loadedSingleFile = [self._srcDicomFileObjectsDict[self._lastLoadFileDir]]
-                    self.loadFilesIsComplete.emit()
+                    self._loadFilesThreadJob(src)
                     continue
 
                 seriesInDir = loader(src)
 
                 prevLen = len(self._srcList)
+
+                if len(seriesInDir) == 0:
+                    filesNotSeriesInDir = loadFilesInDirNotSeries(src)
+
+                    self._loadedSingleFile.clear()
+
+                    for file in filesNotSeriesInDir:
+                        self._srcDicomFileObjectsDict[file[0]] = file[1]
+                        self._lastLoadFileDir = file[0]
+                        self._loadedSingleFile.append(self._srcDicomFileObjectsDict[self._lastLoadFileDir])
+
+                    self.loadFilesIsComplete.emit()
+                        #time.sleep(1)
+
+                    continue
 
                 for series in seriesInDir:
                     self._srcList.append((src, series))

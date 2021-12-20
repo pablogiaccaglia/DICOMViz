@@ -9,7 +9,7 @@ from GUI.docks.DockSeries import DockSeries
 from GUI.graphics.GIFExporter import GIFExporter
 
 
-class GIFHandler(QWidget):
+class AnimationHandler(QWidget):
     animationToggled = pyqtSignal()
 
     def __init__(self, dockSeries: DockSeries):

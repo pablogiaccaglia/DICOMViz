@@ -1,15 +1,15 @@
 import copy
 from collections import namedtuple
 
-from alterations.CTLungsAlterations import segment_lung_mask
+from alterations.CTLungsAlterations import segmentLungsMask
 
 DicomMasks = namedtuple("DicomMasks", ["segmentedLungs", "segmentedLungsFill", "internalStructures"])
 
 
 def getDicomMasks(originalImg, param):
     # get masks
-    segmentedLungs = segment_lung_mask(originalImg, param, fill_lung_structures = False)
-    segmentedLungsFill = segment_lung_mask(originalImg, param, fill_lung_structures = True)
+    segmentedLungs = segmentLungsMask(originalImg, param, fill_lung_structures = False)
+    segmentedLungsFill = segmentLungsMask(originalImg, param, fill_lung_structures = True)
     internalStructures = segmentedLungs - segmentedLungsFill
     dicomMasks = DicomMasks(segmentedLungs, segmentedLungsFill, internalStructures)
     return dicomMasks
