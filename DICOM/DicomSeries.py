@@ -141,7 +141,8 @@ class DicomSeries(DicomAbstractContainer.DicomAbstractContainerClass):
 
     def getDicomRawImage(self, index: int) -> DicomFileWrapper:
         if self._seriesPixelsDataTuple is None:
-            return DicomFileWrapper(fileName = self._sortedFileNamesList[index])
+            obj = DicomFileWrapper(fileName = self._sortedFileNamesList[index])
+            return obj
         else:
             return self.getDicomFile(index = 0)
 

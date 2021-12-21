@@ -26,8 +26,8 @@ class DockSeries(Dock):
             self.currentSelectedSeriesIndex = windowSingleton.mainWindow.dicomHandler.currSelectedSeriesIndex
             self._currentSeriesObject = windowSingleton.mainWindow.dicomHandler.currentSeriesObject
             windowSingleton.mainWindow.dicomHandler.currentDicomFileObject = self._currentSeriesObject
-            windowSingleton.mainWindow.dicomHandler.setImageToView(self._currentSeriesObject.getDicomRawImage(index = 0),
-                                                                   viewMode = ViewMode.ORIGINAL, isFirstImage = True)
+            obj = self._currentSeriesObject.getDicomRawImage(index = 0)
+            windowSingleton.mainWindow.dicomHandler.setImageToView(obj, viewMode = ViewMode.ORIGINAL, isFirstImage = True)
             self._currentSeriesObject.computeSliceThickness()
             self._currentSeriesObject.loadPixelDataTuple()
 
@@ -36,11 +36,7 @@ class DockSeries(Dock):
             item.setToolTip(fileName)
             self._listView.addItem(item)
 
-        self.setSelectedItem(index = 0)
-
         self._listView.setMinimumWidth(self._listView.sizeHintForColumn(0) + 20)
-
-        self.firstLoad = False
 
     def setSelectedItem(self, index) -> None:
         super().setSelectedItem(index)
@@ -59,7 +55,8 @@ class DockSeries(Dock):
     def _handleItemSelectionChange(self) -> None:
 
         if self.firstLoad:
-            pass
+            self.firstLoad = False
+            return
 
         try:
             if not len(self._listView.selectedItems()):
@@ -74,5 +71,7 @@ class DockSeries(Dock):
                     self._currentSeriesObject.getDicomFile(self.currentPosition),
                     windowSingleton.mainWindow.dicomHandler.currentViewMode,
                     isFirstImage = False)
+
+
         except:
             pass

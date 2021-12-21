@@ -116,6 +116,10 @@ class GUIMainWindow(QMainWindow):
         self.update()
 
     def changeViewMode(self, mode: ViewMode):
+
+        if self.dicomHandler.currentViewMode is ViewMode.NEGATIVE and mode is ViewMode.NEGATIVE:
+            mode = ViewMode.ORIGINAL
+
         self.dicomHandler.currentViewMode = mode
         self.graphicsView.setImageToView(self.dicomHandler.currentShownDicomFileObject, mode, False)
 

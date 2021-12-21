@@ -53,27 +53,41 @@ class DICOMGraphicsView(CustomImageView):
         return self._gifHandler
 
     def toggleOnceAutoLevels(self) -> None:
-        self.autoLevels()
-        self._optionImageLevels = self._imageLevels
-        self._autoLevelsOption = False
+        try:
+            self.autoLevels()
+            self._optionImageLevels = self._imageLevels
+            self._autoLevelsOption = False
+        except:
+            pass
 
     def setImageToView(self, DicomContainer: 'DicomAbstractContainerClass', viewMode: ViewMode,
                        isFirstImage: bool) -> None:
         try:
 
             if viewMode is not None and viewMode is not ViewMode.NEGATIVE:
+
+                if self._currentViewMode is ViewMode.NEGATIVE and viewMode is ViewMode.ORIGINAL:
+                    self._isNegative = False
+
                 self._currentViewMode = viewMode
 
             windowSingleton.mainWindow.setWindowTitle("DICOM Visualizer : " + DicomContainer.filename)
 
             if viewMode is ViewMode.NEGATIVE:
                 self._currentOriginalImageData = DicomContainer.getPixelData(mode = self._currentViewMode)
-                self._isNegative = not self._isNegative
+                self._isNegative = True
 
             else:
                 self._currentOriginalImageData = DicomContainer.getPixelData(mode = viewMode)
 
             image = self._currentOriginalImageData
+
+            if viewMode is ViewMode.ORIGINAL:
+
+                if self._isNegative:
+                    isFirstImage = True
+
+                self._isNegative = False
 
             if self._isNegative:
                 image = numpy.invert(self._currentOriginalImageData)
@@ -87,13 +101,16 @@ class DICOMGraphicsView(CustomImageView):
                                           image = image)
 
             else:
+                if viewMode is ViewMode.ORIGINAL and self._previousMode is ViewMode.NEGATIVE:
+                    isFirstImage = True
+
                 self._setImageToView(img = image, mode = viewMode, isFirstImage = isFirstImage)
 
             if DicomContainer is not None:
                 windowSingleton.mainWindow.dicomHandler.currentShownDicomFileObject = DicomContainer
                 windowSingleton.mainWindow.dicomHandler.currentDicomFileObject = DicomContainer
 
-        except Exception:
+        except Exception as e:
             self._setImageToView(None, ViewMode.ORIGINAL, False)
             windowSingleton.mainWindow.setWindowTitle("DICOM Visualizer: No image")
 
@@ -263,7 +280,8 @@ class DICOMGraphicsView(CustomImageView):
                       autoHistogramRange = self._autoHistogramRangeOption,
                       autoLevels = self._autoLevelsOption, levelMode = 'mono')
 
-        if mode == ViewMode.NEGATIVE and self._previousMode != ViewMode.NEGATIVE:
+        if mode == ViewMode.NEGATIVE and self._previousMode != ViewMode.NEGATIVE or \
+                (mode == ViewMode.ORIGINAL and self._previousMode == ViewMode.NEGATIVE):
             self.toggleOnceAutoLevels()
 
         if isFirstImage:

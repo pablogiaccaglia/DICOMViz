@@ -78,6 +78,10 @@ class Handler(QObject):
 
     @currentViewMode.setter
     def currentViewMode(self, mode: ViewMode) -> None:
+
+        if self._currentViewMode is ViewMode.NEGATIVE and mode is ViewMode.NEGATIVE:
+            mode = ViewMode.ORIGINAL
+
         self._currentViewMode = mode
 
     @property
