@@ -1,5 +1,7 @@
-# DicomViz
-![dicomviz](DicomViz/dicomviz-logo.png)
+# 🏥 DicomViz
+<p align="center">
+  <img width="300" height="300" src="DicomViz/dicomviz-logo.png">
+</p>
 
 **DICOMViz**, a modular, expandable and lightweight portable **DICOM viewer** application written in **Python** and **Qt**. 
 It allows to load and view **Dicom series**, single acquisitions and their tag data. 
@@ -65,6 +67,23 @@ DicomViz can be run directly as a module from the project's directory:
 
 
 # 📷 Screenshots
+
+Image Visualization        |  Series Visualization
+:-------------------------:|:-------------------------:
+![](report/latex/image%20focus.png)|  ![](report/latex/overall.png)
+
+---
+
+Negative Image             |  Lungs mask
+:-------------------------:|:-------------------------:
+![](report/latex/negative2.png)|  ![](report/latex/mask2.png)
+
+---
+
+Segmented lungs            |  Tags focus
+:-------------------------:|:-------------------------:
+![](report/latex/segmented.png)|  ![](report/latex/tags%20focus.png)
+
 
 # 🤵 Authors
 
