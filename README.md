@@ -65,6 +65,7 @@ DicomViz can be run directly as a module from the project's directory:
 | Series Animation |[![GREEN](http://placehold.it/15/44bb44/44bb44)](https://github.com/Calonca/ing-sw-2021-laconca-lodari-giaccaglia/tree/master/src/main/java/it/polimi/ingsw/server) |
 | Image Export| [![GREEN](http://placehold.it/15/44bb44/44bb44)](https://github.com/Calonca/ing-sw-2021-laconca-lodari-giaccaglia/tree/master/src/main/java/it/polimi/ingsw/client/view/GUI) |
 | Series GIF Export |[![GREEN](http://placehold.it/15/44bb44/44bb44)](https://github.com/Calonca/ing-sw-2021-laconca-lodari-giaccaglia/tree/master/src/main/java/it/polimi/ingsw/client/view/CLI) |
+| Light / Dark Theme |[![GREEN](http://placehold.it/15/44bb44/44bb44)](https://github.com/Calonca/ing-sw-2021-laconca-lodari-giaccaglia/tree/master/src/main/java/it/polimi/ingsw/client/view/CLI) |
 
 
 # 📷 Screenshots
