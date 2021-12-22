@@ -1,0 +1,7 @@
+imageio==2.9.0
+numpy==1.20.1
+pydicom==2.2.2
+PyQt6==6.2.2
+pyqtgraph==0.12.3
+scikit_image==0.18.1
+skimage==0.0
