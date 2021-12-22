@@ -17,15 +17,16 @@ ensuring a fluent and user-friendly interaction thanks to a simple but customiza
 
 # Contents
 
-- ⚙ [System requirements️](#-system-requirements)
+- ⚙  [System requirements️](#system-requirements)
 - 🚀 [Setup instructions](#-setup-instructions)
 - 👨‍💻 [Usage](#-usage)
 - 💡 [Features](#-features)
 - 📷 [Screenshots](#-screenshots)  
-- 🤵 [Authors](#-usage)
-- 📝 [License](#-usage)
+- 🤵 [Authors](#-authors)
+- 📝 [License](#-license)
 
-# ⚙️ System requirements
+# System requirements
+
 
 ## Required software
 
