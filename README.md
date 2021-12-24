@@ -19,6 +19,7 @@ ensuring a fluent and user-friendly interaction thanks to a simple but customiza
 
 - ⚙  [System requirements️](#system-requirements)
 - 🚀 [Setup instructions](#-setup-instructions)
+- 📜 [Report](report/report.pdf)
 - 👨‍💻 [Usage](#-usage)
 - 💡 [Features](#-features)
 - 📷 [Screenshots](#-screenshots)  
@@ -45,6 +46,7 @@ ensuring a fluent and user-friendly interaction thanks to a simple but customiza
 From the project's directory run the following commands:
 
     pip install -r requirements.txt
+    
 
 # 👨‍💻 Usage
 
