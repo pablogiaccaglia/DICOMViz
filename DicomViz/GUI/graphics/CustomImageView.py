@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from functools import partial
 from typing import Optional
 
 from PyQt6.QtGui import QImage
@@ -48,10 +49,19 @@ class CustomImageView(pyqtgraph.ImageView):
         self._settedImage = None
         self._negativeImage = None
         self._isSomeTransformationAlreadyAppliedToCurrentImg = False
+        self._backgroundColor = 'black'
 
     @property
     def isSomeTransformationAlreadyAppliedToCurrentImg(self) -> bool:
         return self._isSomeTransformationAlreadyAppliedToCurrentImg
+
+    @property
+    def backgroundColor(self) -> str:
+        return self._backgroundColor
+
+    def setBackgroundColor(self, color: str) -> None:
+        if color:
+            self._backgroundColor = self.changeBgColorAction.color
 
     @isSomeTransformationAlreadyAppliedToCurrentImg.setter
     def isSomeTransformationAlreadyAppliedToCurrentImg(self, value: bool) -> None:
@@ -80,11 +90,15 @@ class CustomImageView(pyqtgraph.ImageView):
 
             if (self._currentRotationDegrees >= 360) or (self._currentRotationDegrees <= -360) or (self._currentRotationDegrees == 0):
                 self.clearTransformations()
+                self._currentEffectiveRotationTransformation = ROTATION_TRANSFORMATION.ROTATE_0
                 return
 
             transformationTuple = imageUtils.getTransformationFromRotationDegrees(self._currentRotationDegrees)
             transformation = transformationTuple[0]
             self._currentRotationDegrees = transformationTuple[1]
+
+            print(str(self._currentRotationDegrees))
+
             if transformation is None:
                 self.clearTransformations()
                 return
@@ -100,6 +114,9 @@ class CustomImageView(pyqtgraph.ImageView):
 
     def setBackgroundColorOnSignal(self) -> None:
         self.view.setBackgroundColor(self.changeBgColorAction.color)
+
+    def restoreBackgroundColorOnSignal(self) -> None:
+        self.view.setBackgroundColor(self._backgroundColor)
 
     def getQImage(self) -> Optional[QImage]:
         return self.imageItem.qimage
@@ -208,6 +225,8 @@ class CustomImageView(pyqtgraph.ImageView):
         self.changeBgColorAction = ColorDialogAction(translate("ImageView", "Change Background Color"), self.menu)
         self.menu.addAction(self.changeBgColorAction)
         self.changeBgColorAction.colorChangedSignal.connect(self.setBackgroundColorOnSignal)
+        self.changeBgColorAction.dialogCancelClickedSignal.connect(self.restoreBackgroundColorOnSignal)
+        self.changeBgColorAction.dialogOkClickedSignal.connect(partial(self.setBackgroundColor, self.changeBgColorAction.color))
 
     def _sliderButtonClicked(self, b) -> None:
         self.ui.sliderGroup.setVisible(b)

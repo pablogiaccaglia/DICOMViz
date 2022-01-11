@@ -17,7 +17,15 @@ class ViewModeBgColor(Enum):
     ORIGINAL = "black"
     LUNGS_MASK = "black"
     SEGMENTED_LUNGS = "w"
-    SEGMENTED_LUNGS_W_INTERNAL = "white"
+    SEGMENTED_LUNGS_W_INTERNAL = "#e9e9e9"
+    NEGATIVE = "white"
+
+
+class ViewModeBgColorWhenNegative(Enum):
+    ORIGINAL = "white"
+    LUNGS_MASK = "white"
+    SEGMENTED_LUNGS = "w"
+    SEGMENTED_LUNGS_W_INTERNAL = "#151515"
     NEGATIVE = "white"
 
 
@@ -43,6 +51,7 @@ class DICOMGraphicsView(CustomImageView):
         self._currentBgColor = "black"
         self._bgColorBeforeNegative = None
         self._negativeImage = None
+        self._settedImageWithoutTransformations = None
 
     @property
     def currentViewMode(self) -> ViewMode:
@@ -64,36 +73,30 @@ class DICOMGraphicsView(CustomImageView):
                        isFirstImage: bool) -> None:
         try:
 
-            if viewMode is not None and viewMode is not ViewMode.NEGATIVE:
-
-                if self._currentViewMode is ViewMode.NEGATIVE and viewMode is ViewMode.ORIGINAL:
-                    self._isNegative = False
-
-                self._currentViewMode = viewMode
-
             windowSingleton.mainWindow.setWindowTitle("DICOM Visualizer : " + DicomContainer.filename)
 
             if viewMode is ViewMode.NEGATIVE:
-                self._currentOriginalImageData = DicomContainer.getPixelData(mode = self._currentViewMode)
-                self._isNegative = True
-
+                imageData = DicomContainer.getPixelData(mode = self._previousMode)
+                self._isNegative = not self._isNegative
             else:
-                self._currentOriginalImageData = DicomContainer.getPixelData(mode = viewMode)
-
-            image = self._currentOriginalImageData
-
-            if viewMode is ViewMode.ORIGINAL:
-
-                if self._isNegative:
-                    isFirstImage = True
-
-                self._isNegative = False
+                imageData = DicomContainer.getPixelData(mode = viewMode)
 
             if self._isNegative:
-                image = numpy.invert(self._currentOriginalImageData)
-
-            if not numpy.array_equal(image, self._negativeImage):
+                image = numpy.invert(imageData)
                 self._negativeImage = image
+
+            else:
+                image = imageData
+
+            self._currentOriginalImageData = imageData
+
+            if viewMode is not self._previousMode:
+                isFirstImage = True
+
+            if viewMode is not ViewMode.NEGATIVE:
+                self._previousMode = viewMode
+
+            self._settedImageWithoutTransformations = image
 
             if self._isSomeTransformationOn:
                 self.applyTransformations(flipTransformation = self._currentActiveFlipTransformation,
@@ -101,8 +104,6 @@ class DICOMGraphicsView(CustomImageView):
                                           image = image)
 
             else:
-                if viewMode is ViewMode.ORIGINAL and self._previousMode is ViewMode.NEGATIVE:
-                    isFirstImage = True
 
                 self._setImageToView(img = image, mode = viewMode, isFirstImage = isFirstImage)
 
@@ -167,7 +168,13 @@ class DICOMGraphicsView(CustomImageView):
         if self._currentEffectiveRotationTransformation is None:
             transformedImage = image
         else:
-            transformedImage = self.executeTransformation(image, self._currentEffectiveRotationTransformation)
+
+            image = self._settedImageWithoutTransformations
+
+            if self._currentEffectiveRotationTransformation is ROTATION_TRANSFORMATION.ROTATE_0:
+                transformedImage = None
+            else:
+                transformedImage = self.executeTransformation(image, self._currentEffectiveRotationTransformation)
 
         if transformedImage is None:
             transformedImage = image
@@ -175,13 +182,13 @@ class DICOMGraphicsView(CustomImageView):
         return transformedImage
 
     def applyFlipTransformation(self, transformation: FLIP_TRANSFORMATION, image = None) -> Optional[numpy.ndarray]:
+
         if transformation is None:
             return
 
         if image is None:
             image = self._negativeImage
 
-        self._isSomeTransformationOn = True
         self._currentActiveFlipTransformation = transformation
         self._autoRangeOption = False
 
@@ -197,7 +204,7 @@ class DICOMGraphicsView(CustomImageView):
                              fromAction: bool = False) -> None:
 
         if image is None:
-            if self._isSomeTransformationAlreadyAppliedToCurrentImg:
+            if self._isSomeTransformationAlreadyAppliedToCurrentImg or self._currentViewMode != ViewMode.NEGATIVE:
                 image = self._settedImage
             else:
                 image = self._negativeImage
@@ -206,10 +213,10 @@ class DICOMGraphicsView(CustomImageView):
                                                          fromAction = fromAction)
 
         if rotatedImage is None:
-            if self._isSomeTransformationAlreadyAppliedToCurrentImg:
-                imageToFlip = self._settedImage
-            else:
-                imageToFlip = self._negativeImage
+            # if self._isSomeTransformationAlreadyAppliedToCurrentImg:
+            imageToFlip = self._settedImageWithoutTransformations
+            # else:
+            #    imageToFlip = self._negativeImage
         else:
             imageToFlip = rotatedImage
             self._isSomeTransformationAlreadyAppliedToCurrentImg = True
@@ -229,6 +236,8 @@ class DICOMGraphicsView(CustomImageView):
             self._isSomeTransformationAlreadyAppliedToCurrentImg = True
         else:
             self._isSomeTransformationAlreadyAppliedToCurrentImg = False
+
+        self._isSomeTransformationOn = True
 
     def updateExportDialog(self) -> None:
         try:
@@ -266,14 +275,12 @@ class DICOMGraphicsView(CustomImageView):
             self.ui.sliderButton.setDisabled(False)
 
         if self._isNegative:
-            self._currentBgColor = ViewModeBgColor[ViewMode(mode).name].value
-        else:
-            if mode != ViewMode.NEGATIVE:
-                self._previousMode = mode
-            self._currentBgColor = self._bgColorBeforeNegative \
-                if self._bgColorBeforeNegative is not None else ViewModeBgColor[ViewMode(self._previousMode).name].value
+            self._currentBgColor = ViewModeBgColorWhenNegative[ViewMode(mode).name].value
 
-        if not self._isAnimationOn and not self._currentBgColor == 'white':
+        else:
+            self._currentBgColor = ViewModeBgColor[ViewMode(self._previousMode).name].value
+
+        if not self._isAnimationOn:
             self.view.setBackgroundColor(self._currentBgColor)
             self.autoHistogramRangeOption = False
 
@@ -285,14 +292,12 @@ class DICOMGraphicsView(CustomImageView):
                       autoHistogramRange = self._autoHistogramRangeOption,
                       autoLevels = self._autoLevelsOption, levelMode = 'mono')
 
-        if mode == ViewMode.NEGATIVE and self._previousMode != ViewMode.NEGATIVE or \
-                (mode == ViewMode.ORIGINAL and self._previousMode == ViewMode.NEGATIVE):
-            self.toggleOnceAutoLevels()
+        self._currentViewMode = mode
+        windowSingleton.mainWindow.dicomHandler.currentViewMode = mode
 
         if isFirstImage:
             self.toggleOnceAutoLevels()
             windowSingleton.mainWindow.dicomHandler.enableNegativeImageAction()
-            self._previousMode = mode
 
     def _sliderValueChange(self) -> None:
         size = self.ui.slider.value()

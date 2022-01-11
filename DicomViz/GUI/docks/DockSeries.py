@@ -36,6 +36,9 @@ class DockSeries(Dock):
             item.setToolTip(fileName)
             self._listView.addItem(item)
 
+        self.setSelectedItem(index = 0)
+        self._handleItemSelectionChange()
+
         self._listView.setMinimumWidth(self._listView.sizeHintForColumn(0) + 20)
 
     def setSelectedItem(self, index) -> None:
@@ -60,7 +63,7 @@ class DockSeries(Dock):
 
         try:
             if not len(self._listView.selectedItems()):
-                windowSingleton.mainWindow.graphicsView.setImageToView(None, None, None)
+                windowSingleton.mainWindow.dicomHandler.setImageToView(None, None, None)
             else:
                 windowSingleton.mainWindow.dicomHandler.currentDicomFileObject = self._currentSeriesObject
                 windowSingleton.mainWindow.dicomHandler.toggleMenuOptions(True)

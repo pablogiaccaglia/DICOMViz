@@ -19,7 +19,7 @@ class TagsContainer(QtGui.QStandardItemModel):
         self.setHorizontalHeaderLabels(columns)
 
         try:
-            regex = re.compile(str(regex), re.DOTALL)
+            regex = re.compile(str(regex).lower(), re.DOTALL)
         except:
             regex = ""  # no regex or bad pattern
 
@@ -71,7 +71,7 @@ class TagsContainer(QtGui.QStandardItemModel):
                     except:
                         value = repr(value)
 
-                    if not regex or re.search(regex, str(element.name) + tag + value) is not None:
+                    if not regex or re.search(regex, (str(element.name) + tag + value).lower()) is not None:
                         item = QtGui.QStandardItem(value)
                         # original value is stored directly or as repr() form for tag value item, used later when copying
                         item.setData(origvalue)

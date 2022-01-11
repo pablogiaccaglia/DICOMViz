@@ -77,10 +77,6 @@ class Handler(QObject):
 
     @currentViewMode.setter
     def currentViewMode(self, mode: ViewMode) -> None:
-
-        if self._currentViewMode is ViewMode.NEGATIVE and mode is ViewMode.NEGATIVE:
-            mode = ViewMode.ORIGINAL
-
         self._currentViewMode = mode
 
     @property
@@ -191,15 +187,17 @@ class Handler(QObject):
                        viewMode: ViewMode,
                        isFirstImage: bool) -> None:
 
-        windowSingleton.mainWindow.graphicsView.isSomeTransformationAlreadyAppliedToCurrentImg = False
+        # windowSingleton.mainWindow.graphicsView.isSomeTransformationAlreadyAppliedToCurrentImg = False
         if self._isFirstLoad:
             self._isFirstLoad = False
             self.toggleMenuOptions(True)
 
+        self.currentViewMode = viewMode
         windowSingleton.mainWindow.tagsGroupBox.fillTagsTree(dicomFile = DicomContainer)
         windowSingleton.mainWindow.graphicsView.setImageToView(DicomContainer, viewMode, isFirstImage)
 
     def prepareGifExporter(self) -> None:
+        print(self.currentViewMode)
         data = (self._srcList[self._currentSelectedSeriesIndex][1]).getPixelDataList(mode = self.currentViewMode)
         AnimationHandler.prepareGIFExport(data)
 

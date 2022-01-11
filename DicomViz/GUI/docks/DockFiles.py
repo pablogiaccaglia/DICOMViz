@@ -11,6 +11,7 @@ class DockFiles(Dock):
 
     def __init__(self, window):
         super().__init__("DockFiles", window)
+        self.firstLoad = True
 
     def loadFiles(self, files: List) -> None:
 
@@ -35,7 +36,7 @@ class DockFiles(Dock):
 
     def _handleItemSelectionChange(self) -> None:
         if not len(self._listView.selectedItems()):
-            windowSingleton.mainWindow.graphicsView.setImageToView(None, None, None)
+            windowSingleton.mainWindow.dicomHandler.setImageToView(None, None, None)
         else:
 
             item = self.getCurrentSelectedItem()
@@ -44,5 +45,13 @@ class DockFiles(Dock):
             windowSingleton.mainWindow.dicomHandler.currentDicomFileObject = selectedDicomFileObject
             windowSingleton.mainWindow.dicomHandler.toggleMenuOptions(True)
 
-            windowSingleton.mainWindow.dicomHandler.setImageToView(selectedDicomFileObject, windowSingleton.mainWindow.dicomHandler.currentViewMode, isFirstImage = False)
+            isFirstImage = False
+
+            if self.firstLoad:
+                isFirstImage = True
+                self.firstLoad = False
+
+            windowSingleton.mainWindow.dicomHandler.setImageToView(selectedDicomFileObject,
+                                                                   windowSingleton.mainWindow.dicomHandler.currentViewMode,
+                                                                   isFirstImage = isFirstImage)
             self.currentPosition = self._listView.indexFromItem(item).column()

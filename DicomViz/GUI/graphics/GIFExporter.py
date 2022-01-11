@@ -1,3 +1,4 @@
+import math
 import threading
 
 from PyQt6 import QtCore
@@ -92,5 +93,6 @@ class GIFExporter(Exporter, QWidget):
         self.exportGIFSignal.emit()
 
     def saveGIF(self) -> None:
-        print(str(self.fileName))
-        imageio.mimsave(self.fileName, GIFExporter.GIFData, duration = self.speed)
+
+        self.speed = math.floor(self.speed - self.speed*4/5)
+        imageio.mimsave(self.fileName, GIFExporter.GIFData, fps= self.speed)

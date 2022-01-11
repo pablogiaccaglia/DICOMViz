@@ -18,6 +18,7 @@ class ROTATION_TRANSFORMATION(Enum):
     ROTATE_90_CCW = transformationTuple(function = numpy.rot90, partial_params = (1, (1, 0)))
     ROTATE_90_CW = transformationTuple(function = numpy.rot90, partial_params = (1, (0, 1)))
     ROTATE_180 = transformationTuple(function = numpy.rot90, partial_params = (2, (1, 0)))
+    ROTATE_0 = None
 
 class TRANSFORMATION_FROM_DEGREES(Enum):
     _90 = ROTATION_TRANSFORMATION.ROTATE_90_CW

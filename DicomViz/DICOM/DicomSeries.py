@@ -1,5 +1,6 @@
 from typing import Optional, List
 
+import numpy
 import numpy as np
 from numpy import ndarray
 import pydicom
@@ -127,7 +128,11 @@ class DicomSeries(DicomAbstractContainer.DicomAbstractContainerClass):
 
         for index in range(0, self._seriesSize):
             data = self.getPixelData(index, mode)[0, :, :]
-            pixelData.append(np.uint8(data))
+
+            if mode is ViewMode.NEGATIVE:
+                data = numpy.invert(data)
+
+            pixelData.append(data)
 
         return pixelData
 

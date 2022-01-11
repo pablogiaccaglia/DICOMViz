@@ -29,6 +29,7 @@ class AnimationHandler(QWidget):
         windowSingleton.mainWindow.graphicsView.setIsAnimationOn(True)
         self.animationToggled.connect(partial(windowSingleton.mainWindow.dicomHandler.toggleGifSlider, self._stopped))
         self.animationToggled.connect(windowSingleton.mainWindow.dicomHandler.changeAnimateActionText)
+        self.startAnimation()
 
     def dockSeriesContentChanged(self) -> None:
 
@@ -70,7 +71,7 @@ class AnimationHandler(QWidget):
 
         self._dockSeries.setSelectedItem(self._currentImageIndex)
 
-        windowSingleton.mainWindow.graphicsView.setImageToView(
+        windowSingleton.mainWindow.dicomHandler.setImageToView(
             DicomContainer = self._currentSeries.getDicomFile(self._currentImageIndex),
             viewMode = windowSingleton.mainWindow.dicomHandler.currentViewMode,
             isFirstImage = False)
