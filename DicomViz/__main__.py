@@ -1,7 +1,6 @@
 #! python
 
-# DicomVi
-# Copyright (C) 2016-9 Eric Kerfoot, King's College London, all rights reserved
+# DicomViz
 #
 # This file is part of DicomViz.
 #
