@@ -13,7 +13,10 @@ Even though the current state of the application is not oriented to image proces
 additional features allow to operate with negative colors images, color maps, exposure, lungs masks and segmentation. 
 The UI, written in the renowned QT Framework Python binding **Pyqt**, plays an important role, 
 ensuring a fluent and user-friendly interaction thanks to a simple but customizable layout.
+<br>
 
+In order to fulfill our purpose, we focused on the Italian vaccination campaign by relying on the daily updated open data about delivery and administration of COVID-19 vaccines provided by the Italian Ministry of Health. Of the data available at [this Github repository](https://github.com/italia/covid19-opendata-vaccini), only three datasets were picked to feed the system.
+The idea is to provide a tool aware of data updates, reason for why we implemented a small data processing pipeline to fetch, slightly change and standardize the data uploaded to the aforementioned repository. More details about this process will be provided in the next sections.
 
 # Contents
 
@@ -61,7 +64,7 @@ DicomViz can be run directly as a module from the project's directory:
 
 | Functionality | Status |
 |:-----------------------|:------------------------------------:|
-| Image Visualization | [![GREEN](http://placehold.it/15/44bb44/44bb44)](https://github.com/Calonca/ing-sw-2021-laconca-lodari-giaccaglia/tree/master/src/main/java/it/polimi/ingsw/server/model) |
+| Image Visualization | [![GREEN](http://placehold.it/15/44bb44/44bb44)](https://github.com/pablogiaccaglia/DICOMViz/tree/master/DicomViz/GUI/graphics) |
 | Image Alterations |[![GREEN](http://placehold.it/15/44bb44/44bb44)](https://github.com/Calonca/ing-sw-2021-laconca-lodari-giaccaglia/tree/master/src/main/java/it/polimi/ingsw/client/view/CLI) |
 | Series Visualization | [![GREEN](http://placehold.it/15/44bb44/44bb44)](https://github.com/Calonca/ing-sw-2021-laconca-lodari-giaccaglia/tree/master/src/main/java/it/polimi/ingsw/server/model) |
 | Series Animation |[![GREEN](http://placehold.it/15/44bb44/44bb44)](https://github.com/Calonca/ing-sw-2021-laconca-lodari-giaccaglia/tree/master/src/main/java/it/polimi/ingsw/server) |
