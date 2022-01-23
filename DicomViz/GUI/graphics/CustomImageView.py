@@ -97,8 +97,6 @@ class CustomImageView(pyqtgraph.ImageView):
             transformation = transformationTuple[0]
             self._currentRotationDegrees = transformationTuple[1]
 
-            print(str(self._currentRotationDegrees))
-
             if transformation is None:
                 self.clearTransformations()
                 return
