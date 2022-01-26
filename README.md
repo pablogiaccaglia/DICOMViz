@@ -26,7 +26,7 @@ The idea is to provide a tool aware of data updates, reason for why we implement
 - 👨‍💻 [Usage](#-usage)
 - 💡 [Features](#-features)
 - 📷 [Screenshots](#-screenshots)
-- 📷 [GIFs](#-screenshots)
+- 📹 [GIFs](#-gifs)
 - 🤵 [Authors](#-authors)
 - 📝 [License](#-license)
 
@@ -91,7 +91,7 @@ Segmented lungs            |  Tags focus
 :-------------------------:|:-------------------------:
 ![](report/latex/segmented.png)|  ![](report/latex/tags%20focus.png)
 
-# 📷 GIFs
+# 📹 GIFs
 
 Series Gif        |  Negative Series Gif
 :-------------------------:|:-------------------------:
