@@ -25,7 +25,8 @@ The idea is to provide a tool aware of data updates, reason for why we implement
 - 📜 [Report](report/report.pdf)
 - 👨‍💻 [Usage](#-usage)
 - 💡 [Features](#-features)
-- 📷 [Screenshots](#-screenshots)  
+- 📷 [Screenshots](#-screenshots)
+- 📷 [GIFs](#-screenshots)
 - 🤵 [Authors](#-authors)
 - 📝 [License](#-license)
 
@@ -72,7 +73,6 @@ DicomViz can be run directly as a module from the project's directory:
 | Series GIF Export |[![GREEN](http://placehold.it/15/44bb44/44bb44)](https://github.com/Calonca/ing-sw-2021-laconca-lodari-giaccaglia/tree/master/src/main/java/it/polimi/ingsw/client/view/CLI) |
 | Light / Dark Theme |[![GREEN](http://placehold.it/15/44bb44/44bb44)](https://github.com/Calonca/ing-sw-2021-laconca-lodari-giaccaglia/tree/master/src/main/java/it/polimi/ingsw/client/view/CLI) |
 
-
 # 📷 Screenshots
 
 Image Visualization        |  Series Visualization
@@ -91,7 +91,25 @@ Segmented lungs            |  Tags focus
 :-------------------------:|:-------------------------:
 ![](report/latex/segmented.png)|  ![](report/latex/tags%20focus.png)
 
+# 📷 GIFs
 
+Series Gif        |  Negative Series Gif
+:-------------------------:|:-------------------------:
+![](https://github.com/pablogiaccaglia/DICOMViz/blob/master/report/latex/perslides-min.gif)|  ![](https://github.com/pablogiaccaglia/DICOMViz/blob/master/report/latex/perslide11-min.gif)
+
+---
+
+Change Background Color            |  Change Colormap
+:-------------------------:|:-------------------------:
+![](https://github.com/pablogiaccaglia/DICOMViz/blob/master/report/latex/changecolor.gif)|  ![](https://github.com/pablogiaccaglia/DICOMViz/blob/master/report/latex/colormap.gif)
+
+---
+
+Rotate & Flip DICOM Image             |  Change Theme
+:-------------------------:|:-------------------------:
+![](https://github.com/pablogiaccaglia/DICOMViz/blob/master/report/latex/rotateflip.gif)|  ![](https://github.com/pablogiaccaglia/DICOMViz/blob/master/report/latex/theme.gif)
+
+---
 # 🤵 Authors
 
 DicomBrowser is developed and maintained by Pablo Giaccaglia <pablo.giaccaglia@mail.polimi.it>
