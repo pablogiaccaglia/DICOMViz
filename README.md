@@ -15,9 +15,6 @@ The UI, written in the renowned QT Framework Python binding **Pyqt**, plays an i
 ensuring a fluent and user-friendly interaction thanks to a simple but customizable layout.
 <br>
 
-In order to fulfill our purpose, we focused on the Italian vaccination campaign by relying on the daily updated open data about delivery and administration of COVID-19 vaccines provided by the Italian Ministry of Health. Of the data available at [this Github repository](https://github.com/italia/covid19-opendata-vaccini), only three datasets were picked to feed the system.
-The idea is to provide a tool aware of data updates, reason for why we implemented a small data processing pipeline to fetch, slightly change and standardize the data uploaded to the aforementioned repository. More details about this process will be provided in the next sections.
-
 # Contents
 
 - ⚙  [System requirements️](#system-requirements)
