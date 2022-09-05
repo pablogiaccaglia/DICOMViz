@@ -17,7 +17,7 @@ ensuring a fluent and user-friendly interaction thanks to a simple but customiza
 
 # Contents
 
-- ⚙  [System requirements️](#system-requirements)
+- ⚙  [System requirements️](#-system-requirements)
 - 🚀 [Setup instructions](#-setup-instructions)
 - 📜 [Report](report/report.pdf)
 - 👨‍💻 [Usage](#-usage)
@@ -27,7 +27,7 @@ ensuring a fluent and user-friendly interaction thanks to a simple but customiza
 - 🤵 [Authors](#-authors)
 - 📝 [License](#-license)
 
-# System requirements
+# ⚙ System requirements
 
 
 ## Required software
